@@ -29,6 +29,11 @@ app.get('/meet-the-owners', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'meet-the-owners.html'));
 });
 
+// Serve services page
+app.get('/services', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'services.html'));
+});
+
 // Serve FAQ page
 app.get('/faq', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'faq.html'));

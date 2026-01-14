@@ -63,7 +63,7 @@ function initializeHamburgerMenu() {
         }
 
         // Close menu when clicking on a nav link
-        const navLinks = mainNav.querySelectorAll('.nav-link, .dropdown-item');
+        const navLinks = mainNav.querySelectorAll('.nav-link');
         navLinks.forEach(link => {
             link.addEventListener('click', closeMenu);
         });

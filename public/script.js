@@ -1,5 +1,36 @@
 // Bay Pet Ventures - Homepage Script
 document.addEventListener('DOMContentLoaded', function() {
+    // Discount Banner Functionality
+    const discountBanner = document.getElementById('discountBanner');
+    const discountBannerClose = document.getElementById('discountBannerClose');
+    const currentMonthElement = document.getElementById('currentMonth');
+    
+    if (discountBanner && currentMonthElement) {
+        // Get current month name
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+        const currentDate = new Date();
+        const currentMonthName = monthNames[currentDate.getMonth()];
+        currentMonthElement.textContent = currentMonthName;
+        
+        // Check if banner was previously closed (using localStorage with month key)
+        const bannerKey = `discountBannerClosed_${currentMonthName}_${currentDate.getFullYear()}`;
+        const isBannerClosed = localStorage.getItem(bannerKey) === 'true';
+        
+        if (isBannerClosed) {
+            discountBanner.classList.add('hidden');
+        }
+        
+        // Close banner functionality
+        if (discountBannerClose) {
+            discountBannerClose.addEventListener('click', function() {
+                discountBanner.classList.add('hidden');
+                // Store closed state for this month/year
+                localStorage.setItem(bannerKey, 'true');
+            });
+        }
+    }
+    
     // Smooth scrolling for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {

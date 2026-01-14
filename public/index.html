@@ -10,8 +10,35 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window,document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+     fbq('init', '1375484534303889'); 
+    fbq('track', 'PageView');
+    </script>
+    <noscript>
+     <img height="1" width="1" 
+    src="https://www.facebook.com/tr?id=1375484534303889&ev=PageView
+    &noscript=1"/>
+    </noscript>
+    <!-- End Meta Pixel Code -->
 </head>
 <body>
+    <!-- Discount Banner -->
+    <div class="discount-banner" id="discountBanner">
+        <div class="discount-banner-content">
+            <span class="discount-banner-text">🎉 Get $50 off this <span id="currentMonth"></span>! Limited time offer.</span>
+            <button class="discount-banner-close" id="discountBannerClose" aria-label="Close banner">×</button>
+        </div>
+    </div>
     <div id="header-placeholder"></div>
 
     <!-- Hero Section -->
@@ -35,6 +62,42 @@
         </div>
     </section>
 
+    <!-- All-Inclusive Package Section -->
+    <section class="package-offer-section">
+        <div class="container">
+            <h2 class="package-offer-title">The All-Inclusive Package</h2>
+            <div class="package-offer-content">
+                <div class="package-features">
+                    <div class="package-feature-item">
+                        <span class="package-feature-check">✓</span>
+                        <span class="package-feature-text">Door-to-door pickup & drop-off <span class="package-feature-value">($60 value)</span></span>
+                    </div>
+                    <div class="package-feature-item">
+                        <span class="package-feature-check">✓</span>
+                        <span class="package-feature-text">Beach Adventure & Socialization <span class="package-feature-value">($90 value)</span></span>
+                    </div>
+                    <div class="package-feature-item">
+                        <span class="package-feature-check">✓</span>
+                        <span class="package-feature-text">Luxury Treats Snack Break <span class="package-feature-value">($10 value)</span></span>
+                    </div>
+                    <div class="package-feature-item">
+                        <span class="package-feature-check">✓</span>
+                        <span class="package-feature-text">Bath, Brush & Shampoo Refresh <span class="package-feature-value">($40 value)</span></span>
+                    </div>
+                    <div class="package-feature-item">
+                        <span class="package-feature-check">✓</span>
+                        <span class="package-feature-text">Photo/Video Report Card <span class="package-feature-value">(Priceless)</span></span>
+                    </div>
+                </div>
+                <div class="package-pricing">
+                    <div class="package-total-value">Total Value: <span class="package-total-amount">$250</span></div>
+                    <div class="package-price">$199</div>
+                    <a href="/register" class="btn-package-cta">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Testimonials Section -->
     <section class="testimonials-section">
         <div class="container">
@@ -44,7 +107,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"My dog Max comes home exhausted but smelling amazing! He's so much more confident around other dogs now. Bay Pet Ventures is incredible!"</p>
+                            <p class="testimonial-text">"Charles is incredibly professional and knowledgeable. You can tell he's a certified trainer, not just a dog walker. My dog comes home completely exhausted and sleeps for hours. Worth every penny!"</p>
                             <p class="testimonial-author">— Sarah M.</p>
                             <p class="testimonial-location">San Jose, CA</p>
                         </div>
@@ -52,7 +115,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"Bella used to be so shy, but after a few visits she's become so much more sociable. The staff truly cares about each dog."</p>
+                            <p class="testimonial-text">"I used to feel so guilty leaving my dog at home all day while I worked. Now I know he's getting real exercise and adventure at the beach. The peace of mind is priceless."</p>
                             <p class="testimonial-author">— Michael R.</p>
                             <p class="testimonial-location">Santa Clara, CA</p>
                         </div>
@@ -60,7 +123,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"Charlie comes back tired and clean every time. Best part? He's way more confident at the dog park now. Worth every penny!"</p>
+                            <p class="testimonial-text">"My small terrier used to bark and freak out at every dog we passed. After a few sessions, she's so much calmer. The one-on-one attention made all the difference. She doesn't react to other dogs anymore!"</p>
                             <p class="testimonial-author">— Jennifer L.</p>
                             <p class="testimonial-location">Sunnyvale, CA</p>
                         </div>
@@ -68,7 +131,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"The beach trips are my dog's favorite thing. He sleeps like a baby when he gets home, and he always smells fresh!"</p>
+                            <p class="testimonial-text">"I can't stand the thought of my dog stuck in a windowless kennel with 20 other dogs of unknown temperament. This is so much better - real exercise, fresh air, and professional supervision. My dog is exhausted and happy!"</p>
                             <p class="testimonial-author">— David K.</p>
                             <p class="testimonial-location">Mountain View, CA</p>
                         </div>
@@ -76,7 +139,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"Luna is so much more outgoing now. She used to hide behind me, but now she's the first to greet other dogs. Amazing transformation!"</p>
+                            <p class="testimonial-text">"The professionalism here is unmatched. Charles communicates clearly, arrives on time, and my dog always comes back completely worn out. He sleeps like a rock for the rest of the day!"</p>
                             <p class="testimonial-author">— Emily T.</p>
                             <p class="testimonial-location">Palo Alto, CA</p>
                         </div>
@@ -84,7 +147,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"My pup comes home exhausted but smelling wonderful. The socialization has made him so much more confident. Highly recommend!"</p>
+                            <p class="testimonial-text">"I felt terrible that my high-energy dog wasn't getting enough exercise. This service has been a game-changer. He comes home so tired and content, and I finally don't feel guilty anymore."</p>
                             <p class="testimonial-author">— Robert P.</p>
                             <p class="testimonial-location">Los Gatos, CA</p>
                         </div>
@@ -92,7 +155,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"Best pet care service we've ever used. Our dog is happier, more social, and always comes back clean and tired. Its perfect!"</p>
+                            <p class="testimonial-text">"My 8-pound Yorkie was a nightmare on walks, barking at everything. After working with Charles, she's transformed. No more reactive barking, and she's so much calmer around other dogs!"</p>
                             <p class="testimonial-author">— Lisa W.</p>
                             <p class="testimonial-location">Saratoga, CA</p>
                         </div>
@@ -100,7 +163,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"Rocky loves going to Bay Pet Ventures. He comes home tired but smelling great, and he's become so much more confident with other dogs."</p>
+                            <p class="testimonial-text">"After seeing how cramped and stressful traditional daycares are, I'll never go back. My dog gets real beach time, professional training, and comes home exhausted. This is how dog care should be!"</p>
                             <p class="testimonial-author">— James H.</p>
                             <p class="testimonial-location">Cupertino, CA</p>
                         </div>
@@ -108,7 +171,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"The staff is amazing and my dog always comes back exhausted and smelling fresh. She's also way more sociable than before!"</p>
+                            <p class="testimonial-text">"Charles is a true professional. His training background shows in how he handles my dog. My pup comes home completely wiped out and smelling fresh. The quality of service is exceptional."</p>
                             <p class="testimonial-author">— Amanda C.</p>
                             <p class="testimonial-location">Campbell, CA</p>
                         </div>
@@ -116,7 +179,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"My dog has so much more confidence now. Plus, he always comes home tired and smelling good. Couldn't ask for more!"</p>
+                            <p class="testimonial-text">"I used to feel guilty that my dog spent so much time alone. Now he gets proper exercise and adventure, and I can see how much happier and more tired he is. The guilt is gone!"</p>
                             <p class="testimonial-author">— Thomas B.</p>
                             <p class="testimonial-location">Milpitas, CA</p>
                         </div>
@@ -124,7 +187,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"Daisy comes home exhausted but clean every single time. The socialization has made her so much more outgoing. Love it!"</p>
+                            <p class="testimonial-text">"My small dog was so reactive before. Now she's calm and doesn't bark at other dogs anymore. The one-on-one attention and professional training approach made all the difference!"</p>
                             <p class="testimonial-author">— Nicole S.</p>
                             <p class="testimonial-location">Fremont, CA</p>
                         </div>
@@ -132,7 +195,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"Best investment for my dog's happiness. He's more confident, sociable, and always comes back tired and smelling amazing!"</p>
+                            <p class="testimonial-text">"The thought of my dog in a windowless room with 20 other dogs gives me anxiety. This service is humane and professional. My dog gets real exercise and comes home completely exhausted!"</p>
                             <p class="testimonial-author">— Mark D.</p>
                             <p class="testimonial-location">Redwood City, CA</p>
                         </div>
@@ -140,7 +203,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"My dog used to be anxious around other dogs, but now she's so much more sociable. Plus she always comes home clean and tired!"</p>
+                            <p class="testimonial-text">"The professionalism is outstanding. Charles knows exactly what he's doing, and my dog always comes back so tired he can barely keep his eyes open. Perfect for my high-energy pup!"</p>
                             <p class="testimonial-author">— Rachel F.</p>
                             <p class="testimonial-location">Menlo Park, CA</p>
                         </div>
@@ -148,7 +211,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"The beach trips are incredible. My dog comes home exhausted but smelling wonderful, and he's gained so much confidence!"</p>
+                            <p class="testimonial-text">"I felt so guilty not being able to give my dog enough exercise. This service has been a lifesaver. He comes home exhausted and happy, and I finally feel like a good dog parent!"</p>
                             <p class="testimonial-author">— Kevin J.</p>
                             <p class="testimonial-location">San Jose, CA</p>
                         </div>
@@ -156,7 +219,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"Ollie loves it here! He's so much more outgoing now and always comes back tired but smelling great. Highly recomend!"</p>
+                            <p class="testimonial-text">"My tiny Chihuahua mix used to be a barking machine. After working with Charles, she's so much calmer and doesn't react to other dogs. The professional training approach really works!"</p>
                             <p class="testimonial-author">— Michelle G.</p>
                             <p class="testimonial-location">Santa Clara, CA</p>
                         </div>
@@ -164,7 +227,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"My dog has transformed since coming here. She's more confident, sociable, and always comes home clean and exhausted. Perfect!"</p>
+                            <p class="testimonial-text">"Traditional daycares are inhumane - cramming dogs into small spaces. This is real care. My dog gets beach time, professional supervision, and comes home completely worn out. So much better!"</p>
                             <p class="testimonial-author">— Brian N.</p>
                             <p class="testimonial-location">Sunnyvale, CA</p>
                         </div>
@@ -172,7 +235,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"The staff treats every dog like family. My pup comes home tired but smelling fresh, and he's way more social now!"</p>
+                            <p class="testimonial-text">"Charles is incredibly professional and my dog always comes back exhausted. The quality of service and attention to detail is unmatched. My pup sleeps for hours after each visit!"</p>
                             <p class="testimonial-author">— Stephanie A.</p>
                             <p class="testimonial-location">Mountain View, CA</p>
                         </div>
@@ -180,7 +243,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"Best decision we made for our dog. He's more confident, sociable, and always comes back exhausted but smelling amazing!"</p>
+                            <p class="testimonial-text">"I used to feel guilty leaving my dog home alone all day. Now I know he's getting proper exercise and adventure. He comes home so tired and content. The guilt is completely gone!"</p>
                             <p class="testimonial-author">— Daniel M.</p>
                             <p class="testimonial-location">Palo Alto, CA</p>
                         </div>
@@ -188,7 +251,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"My dog comes home tired and clean every time. The socialization has made her so much more confident. We love Bay Pet Ventures!"</p>
+                            <p class="testimonial-text">"My small dog doesn't freak out and bark at other dogs anymore! The one-on-one professional training has been transformative. She's so much calmer now!"</p>
                             <p class="testimonial-author">— Christina R.</p>
                             <p class="testimonial-location">Los Gatos, CA</p>
                         </div>
@@ -196,9 +259,17 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"Incredible service! My dog is more sociable and confident, plus he always comes home exhausted but smelling wonderful. Couldn't be happier!"</p>
+                            <p class="testimonial-text">"My dog finally learned to swim! I'd tried everything, but Charles's patient approach at the beach worked. Now my pup loves the water and I have the video to prove it. Amazing!"</p>
                             <p class="testimonial-author">— Andrew L.</p>
                             <p class="testimonial-location">Saratoga, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"The professionalism here is top-notch. My dog comes home completely exhausted and sleeps like a baby. No more guilt about not giving him enough exercise!"</p>
+                            <p class="testimonial-author">— Patricia K.</p>
+                            <p class="testimonial-location">Menlo Park, CA</p>
                         </div>
                     </div>
                     <div class="testimonial-item">
@@ -252,6 +323,14 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"I'm so proud - my dog finally learned to swim! He was always too scared before, but Charles's gentle encouragement at the beach changed everything. The video report card captured his first swim and it's my favorite memory!"</p>
+                            <p class="testimonial-author">— Anonymous</p>
+                            <p class="testimonial-location">Burlingame, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
                             <p class="testimonial-text">"I was hesitant about the 'Socialization not Chaos' claim, but this was totally different. Led by a professional trainer, not just a dog walker. Perfect balance of fun and discipline. The photo report card was professional quality!"</p>
                             <p class="testimonial-author">— Anonymous</p>
                             <p class="testimonial-location">Sunnyvale, CA</p>
@@ -268,7 +347,7 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"I appreciate the structured, individualized attention. My older dog doesn't do well with rough-housing, so the safety focus was the selling point. He enjoyed gentle exercise without being overwhelmed. A wonderful, thoughtful business!"</p>
+                            <p class="testimonial-text">"My dog was terrified of water and would never go near it. After a few beach sessions with Charles, he finally learned to swim! Now he loves the water and I can't believe the transformation. The patient, professional approach made all the difference."</p>
                             <p class="testimonial-author">— Anonymous</p>
                             <p class="testimonial-location">Redwood City, CA</p>
                         </div>
@@ -276,26 +355,42 @@
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"The bring home clean feature is the real MVP since my Goldendoodle had a blast at the beach but was returned to my doorstep fluffy, dry, and smelling fresh!"</p>
+                            <p class="testimonial-text">"I've been trying to get my dog to swim for years with no success. Charles worked with him at the beach and now he's a confident swimmer! The video report card showed him swimming for the first time - I cried happy tears!"</p>
                             <p class="testimonial-author">— Anonymous</p>
                             <p class="testimonial-location">Fremont, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"My Lab was always afraid of the water despite being a water breed. After working with Charles at the beach, he finally learned to swim! Now he's like a different dog - confident and happy in the water. Best investment ever!"</p>
+                            <p class="testimonial-author">— Anonymous</p>
+                            <p class="testimonial-location">Los Altos, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"I never thought my dog would learn to swim. He was so scared of water. But Charles was patient and professional, and now my pup is swimming like a pro! The beach environment was perfect for building his confidence."</p>
+                            <p class="testimonial-author">— Anonymous</p>
+                            <p class="testimonial-location">San Mateo, CA</p>
                         </div>
                     </div>
                     <!-- Duplicate items for seamless loop -->
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"My dog Max comes home exhausted but smelling amazing! He's so much more confident around other dogs now. Bay Pet Ventures is incredible!"</p>
+                            <p class="testimonial-text">"Charles is incredibly professional and knowledgeable. You can tell he's a certified trainer, not just a dog walker. My dog comes home completely exhausted and sleeps for hours. Worth every penny!"</p>
                             <p class="testimonial-author">— Sarah M.</p>
-                            <p class="testimonial-location">Cupertino, CA</p>
+                            <p class="testimonial-location">San Jose, CA</p>
                         </div>
                     </div>
                     <div class="testimonial-item">
                         <div class="testimonial-content">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"Bella used to be so shy, but after a few visits she's become so much more sociable. The staff truly cares about each dog."</p>
+                            <p class="testimonial-text">"I used to feel so guilty leaving my dog at home all day while I worked. Now I know he's getting real exercise and adventure at the beach. The peace of mind is priceless."</p>
                             <p class="testimonial-author">— Michael R.</p>
-                            <p class="testimonial-location">Campbell, CA</p>
+                            <p class="testimonial-location">Santa Clara, CA</p>
                         </div>
                     </div>
                 </div>
