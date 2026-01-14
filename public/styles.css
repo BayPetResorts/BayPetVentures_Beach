@@ -170,7 +170,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 30px;
+    gap: 0;
 }
 
 .logo {
@@ -198,8 +198,8 @@ body {
     display: flex;
     gap: 30px;
     align-items: center;
-    flex: 1;
-    justify-content: center;
+    margin-right: 30px;
+    margin-left: auto;
 }
 
 .nav-link {
@@ -592,8 +592,22 @@ body {
 
     /* Testimonials Section */
     .testimonials-section {
-        padding: 80px 0;
+        height: 100vh;
+        padding: 0;
         background-color: var(--beige-bg);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .testimonials-section .container {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 40px 0;
+        max-width: 100%;
+        width: 100%;
     }
 
     .testimonials-title {
@@ -601,15 +615,21 @@ body {
         color: var(--primary-blue);
         font-size: 36px;
         font-weight: 700;
-        margin-bottom: 50px;
+        margin-bottom: 30px;
         letter-spacing: -0.5px;
+        flex-shrink: 0;
+        padding: 0 20px;
     }
 
     .testimonials-container {
         position: relative;
         overflow: hidden;
-        padding: 20px 0;
+        padding: 0;
         cursor: grab;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        width: 100%;
     }
 
     .testimonials-container:active {
@@ -845,12 +865,18 @@ body {
     }
 
     .testimonials-section {
-        padding: 60px 0;
+        height: 100vh;
+        padding: 0;
+    }
+
+    .testimonials-section .container {
+        padding: 30px 0;
     }
 
     .testimonials-title {
         font-size: 28px;
-        margin-bottom: 40px;
+        margin-bottom: 20px;
+        padding: 0 20px;
     }
 
     .testimonial-item {

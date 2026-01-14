@@ -2,7 +2,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Constants
     const TOTAL_STEPS = 3;
-    const PHONE_REGEX = /^[\d\s\(\)\-]+$/;
     const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const MIN_PHONE_LENGTH = 10;
     
@@ -14,6 +13,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // State
     let currentStep = 1;
+    let registrationStarted = false;
+    let formStartTime = null;
+    let tabStartTime = Date.now();
+    let totalTimeOnPage = 0;
+    let timeInBackground = 0;
+    let isPageVisible = true;
     
     // Breed list
     const BREED_LIST = [
@@ -240,6 +245,92 @@ document.addEventListener('DOMContentLoaded', function() {
         return errors;
     }
     
+    // Meta Pixel Tracking Functions
+    function trackRegistrationStart() {
+        if (!registrationStarted && typeof fbq !== 'undefined') {
+            registrationStarted = true;
+            formStartTime = Date.now();
+            fbq('track', 'InitiateCheckout', {
+                content_name: 'Dog Registration',
+                content_category: 'Registration',
+                test_event_code: 'TEST73273'
+            });
+        }
+    }
+    
+    function trackRegistrationComplete(formData) {
+        // Update total time on page before tracking
+        const now = Date.now();
+        if (isPageVisible) {
+            totalTimeOnPage += now - tabStartTime;
+        }
+        
+        if (typeof fbq !== 'undefined' && formData) {
+            const timeSpent = formStartTime ? Math.round((now - formStartTime) / 1000) : 0;
+            const totalTimeOnPageSeconds = Math.round(totalTimeOnPage / 1000);
+            
+            fbq('track', 'CompleteRegistration', {
+                content_name: 'Dog Registration',
+                content_category: 'Registration',
+                value: 199.00,
+                currency: 'USD',
+                time_spent: timeSpent,
+                total_time_on_page: totalTimeOnPageSeconds,
+                time_in_background: Math.round(timeInBackground / 1000),
+                dog_name: formData.dogName || '',
+                breed: formData.breed || '',
+                test_event_code: 'TEST73273'
+            });
+        }
+    }
+    
+    function trackTabSwitch(isVisible) {
+        const now = Date.now();
+        
+        if (isPageVisible && !isVisible) {
+            // Tab switched away - record time spent on page before switching
+            const timeBeforeSwitch = now - tabStartTime;
+            totalTimeOnPage += timeBeforeSwitch;
+            tabStartTime = now;
+            isPageVisible = false;
+            if (typeof fbq !== 'undefined') {
+                fbq('trackCustom', 'TabSwitchedAway', {
+                    time_on_page: Math.round(totalTimeOnPage / 1000),
+                    test_event_code: 'TEST73273'
+                });
+            }
+        } else if (!isPageVisible && isVisible) {
+            // Tab switched back - record time spent in background
+            const timeInBackgroundThisSession = now - tabStartTime;
+            timeInBackground += timeInBackgroundThisSession;
+            isPageVisible = true;
+            tabStartTime = now;
+            if (typeof fbq !== 'undefined') {
+                fbq('trackCustom', 'TabSwitchedBack', {
+                    time_in_background: Math.round(timeInBackgroundThisSession / 1000),
+                    total_time_in_background: Math.round(timeInBackground / 1000),
+                    test_event_code: 'TEST73273'
+                });
+            }
+        }
+    }
+    
+    // Tab Visibility Tracking
+    function initializeTabTracking() {
+        // Use visibilitychange as primary method (more reliable)
+        document.addEventListener('visibilitychange', () => {
+            trackTabSwitch(!document.hidden);
+        });
+        
+        // Update total time on page when page is about to unload
+        window.addEventListener('beforeunload', () => {
+            const now = Date.now();
+            if (isPageVisible) {
+                totalTimeOnPage += now - tabStartTime;
+            }
+        });
+    }
+    
     // Form Submission
     async function submitForm() {
         if (!contactForm) return;
@@ -288,6 +379,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             
             if (response.ok) {
+                // Track successful registration completion
+                trackRegistrationComplete(formData);
                 showSuccessScreen();
             } else {
                 showError(data.error || 'Something went wrong. Please try again.');
@@ -303,6 +396,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.btn-next').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
+            // Track registration start when user first interacts with form
+            trackRegistrationStart();
             if (validateStep(currentStep) && currentStep < TOTAL_STEPS) {
                 currentStep++;
                 showStep(currentStep);
@@ -331,6 +426,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Phone number auto-formatting
     const phoneInput = getElement('phone');
     if (phoneInput) {
+        // Track registration start when user first types in phone field
+        phoneInput.addEventListener('focus', () => {
+            trackRegistrationStart();
+        });
+        
         phoneInput.addEventListener('input', (e) => {
             const cursorPosition = e.target.selectionStart;
             const oldValue = e.target.value;
@@ -569,5 +669,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeFormFields();
     initializeBreedDropdown();
     initializeVaccinationCards();
+    initializeTabTracking();
 });
 

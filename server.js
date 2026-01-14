@@ -102,31 +102,6 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.
   }
 }
 
-// API route for zip code search (example)
-app.get('/api/locations', (req, res) => {
-  const zipCode = req.query.zip;
-  
-  if (!zipCode || zipCode.length !== 5) {
-    return res.status(400).json({ error: 'Invalid zip code' });
-  }
-
-  // Mock location data - replace with actual database/API call
-  const mockLocations = [
-    {
-      id: 1,
-      name: 'Bay Pet Ventures - Main Location',
-      address: '123 Pet Care Blvd',
-      city: 'San Francisco',
-      state: 'CA',
-      zip: zipCode,
-      phone: '(908) 889-7387',
-      distance: '2.5 miles'
-    }
-  ];
-
-  res.json({ locations: mockLocations });
-});
-
 // API route for contact form submission
 app.post('/api/contact', async (req, res) => {
   try {
