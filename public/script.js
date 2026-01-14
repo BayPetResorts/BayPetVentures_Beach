@@ -1,4 +1,4 @@
-// Bay Pet Resorts - Homepage Script
+// Bay Pet Ventures - Homepage Script
 document.addEventListener('DOMContentLoaded', function() {
     // Smooth scrolling for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {

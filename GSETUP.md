@@ -24,7 +24,7 @@ The contact form is already integrated into the website. When users click "Regis
 ### Step 2: Complete OAuth Consent Screen
 1. In Google Cloud Console, go to "APIs & Services" > "OAuth consent screen"
 2. Fill in the required information:
-   - **App name**: `Bay Pet Resorts Contact Form` (or similar)
+   - **App name**: `Bay Pet Ventures Contact Form` (or similar)
    - **User support email**: Your email address
 3. **Select User Type:**
    - Choose **"Internal"** (only available to users within your organization)
@@ -44,10 +44,10 @@ The contact form is already integrated into the website. When users click "Regis
 3. If prompted, configure the consent screen (you may have already done this in Step 2)
 4. Choose "Web application"
 5. Fill in:
-   - **Name**: `Bay Pet Resorts Sheets Client`
+   - **Name**: `Bay Pet Ventures Sheets Client`
    - **Authorized redirect URIs**: 
      - `http://localhost:3000/oauth2callback` (for local development)
-     - `https://baypetresorts.com/oauth2callback` (for production)
+     - `https://www.baypetventures.com/oauth2callback` (for production)
      - Click "Add URI" to add multiple redirect URIs
 6. Click "Create"
 7. **Copy the Client ID and Client Secret** - you'll need these for your `.env` file!
@@ -77,7 +77,7 @@ The contact form is already integrated into the website. When users click "Regis
 
 ### Step 5: Create Google Sheet
 1. Create a new Google Sheet in your Google Drive
-2. Name it something like "Bay Pet Resorts - Contact Submissions"
+2. Name it something like "Bay Pet Ventures - Contact Submissions"
 3. **Share the sheet** with your Google account (the one you used for OAuth)
    - Click "Share" button
    - Add your email address
@@ -106,9 +106,9 @@ GOOGLE_REFRESH_TOKEN=your-refresh-token-from-setup-script
 GOOGLE_REDIRECT_URI=http://localhost:3000/oauth2callback
 ```
 
-**For Production (baypetresorts.com):**
+**For Production (baypetventures.com):**
 ```env
-GOOGLE_REDIRECT_URI=https://baypetresorts.com/oauth2callback
+GOOGLE_REDIRECT_URI=https://www.baypetventures.com/oauth2callback
 ```
 
 **Important Notes:**
@@ -179,7 +179,7 @@ If Google Sheets is not configured, form submissions will still work but will on
 ### "Application name must not be empty" error
 
 - Make sure you completed the OAuth consent screen (Step 2)
-- Fill in the "App name" field with any name (e.g., "Bay Pet Resorts Contact Form")
+- Fill in the "App name" field with any name (e.g., "Bay Pet Ventures Contact Form")
 - Complete all required fields in the consent screen
 
 ## Security Best Practices
@@ -224,14 +224,14 @@ If you prefer to receive submissions via email instead of Google Sheets, you can
 **Pros:** Simple, no Google Cloud setup needed, works immediately  
 **Cons:** Submissions go to email instead of a spreadsheet
 
-## Production Deployment (baypetresorts.com)
+## Production Deployment (baypetventures.com)
 
 ### Step 1: Update Google Cloud Console
 1. Go to "APIs & Services" > "Credentials"
 2. Find your OAuth 2.0 Client ID
 3. Click "Edit" (pencil icon)
 4. Under "Authorized redirect URIs", add:
-   - `https://baypetresorts.com/oauth2callback`
+   - `https://baypetventures.com/oauth2callback`
 5. Click "Save"
 
 ### Step 2: Configure Environment Variables in Vercel
@@ -254,7 +254,8 @@ If you're deploying to Vercel, you need to add environment variables in the Verc
    - `GOOGLE_CLIENT_ID` = `your-client-id.apps.googleusercontent.com`
    - `GOOGLE_CLIENT_SECRET` = `your-client-secret`
    - `GOOGLE_REFRESH_TOKEN` = `your-refresh-token`
-   - `GOOGLE_REDIRECT_URI` = `https://baypetresorts.com/oauth2callback`
+   - `GOOGLE_REDIRECT_URI` = `https://baypetventures.com/oauth2callback`
+- `PUBLIC_BASE_URL` = `https://www.baypetventures.com` (recommended so the code's default redirect URI stays correct)
    - `NODE_ENV` = `production` (optional, but recommended)
 
 4. **Set Environment Scope:**
@@ -282,7 +283,7 @@ If you're deploying to Vercel, you need to add environment variables in the Verc
    - You should see: `📋 Environment: production`
 
 2. **Test the form:**
-   - Visit https://baypetresorts.com
+   - Visit https://baypetventures.com
    - Click "Register Your Dog"
    - Fill out and submit the form
    - Check your Google Sheet - the submission should appear!
@@ -310,7 +311,7 @@ If you're deploying to Vercel, you need to add environment variables in the Verc
 
 2. **403 Forbidden error:**
    - Verify Google Sheets API is enabled in your project
-   - Check that redirect URI `https://baypetresorts.com/oauth2callback` is added in Google Cloud Console
+   - Check that redirect URI `https://baypetventures.com/oauth2callback` is added in Google Cloud Console
    - The redirect URI must match exactly (including https://)
 
 3. **Refresh token issues:**

@@ -15,14 +15,13 @@ app.get('/register', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'register.html'));
 });
 
-// Serve luxury boarding page
+// NOTE: Legacy pages no longer offered — keep routes to avoid breaking old links.
 app.get('/luxury-boarding', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'luxury-boarding.html'));
+  res.redirect(301, '/');
 });
 
-// Serve doggie daycare page
 app.get('/doggie-daycare', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'doggie-daycare.html'));
+  res.redirect(301, '/');
 });
 
 // Serve meet the owners page
@@ -40,9 +39,8 @@ app.get('/contact', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'contact.html'));
 });
 
-// Serve why we're better page
 app.get('/why-we-are-better', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'why-we-are-better.html'));
+  res.redirect(301, '/');
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -51,6 +49,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 let sheets;
 let oauth2Client;
 
+// Public base URL (used for OAuth redirect URI defaults, etc.)
+// Examples:
+// - https://www.baypetventures.com
+// - http://localhost:3000
+const PUBLIC_BASE_URL =
+  (process.env.PUBLIC_BASE_URL || '').trim() ||
+  (process.env.NODE_ENV === 'production'
+    ? 'https://www.baypetventures.com'
+    : `http://localhost:${PORT}`);
+
+const DEFAULT_OAUTH_REDIRECT_URI = `${PUBLIC_BASE_URL.replace(/\/+$/, '')}/oauth2callback`;
+
 // Check if using OAuth 2.0 (preferred) or Service Account
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_REFRESH_TOKEN) {
   try {
@@ -58,9 +68,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.
     oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI || (process.env.NODE_ENV === 'production' 
-        ? 'https://baypetresorts.com/oauth2callback' 
-        : 'http://localhost:3000/oauth2callback')
+      (process.env.GOOGLE_REDIRECT_URI || '').trim() || DEFAULT_OAUTH_REDIRECT_URI
     );
 
     // Set the refresh token
@@ -101,7 +109,7 @@ app.get('/api/locations', (req, res) => {
   const mockLocations = [
     {
       id: 1,
-      name: 'Bay Pet Resorts - Main Location',
+      name: 'Bay Pet Ventures - Main Location',
       address: '123 Pet Care Blvd',
       city: 'San Francisco',
       state: 'CA',
@@ -257,7 +265,7 @@ app.post('/api/contact', async (req, res) => {
     } else if (error.status === 403) {
       console.error('⚠️  Permission denied. Check that:');
       console.error('   1. Google Sheets API is enabled in your project');
-      console.error('   2. The OAuth redirect URI matches: ' + (process.env.GOOGLE_REDIRECT_URI || (process.env.NODE_ENV === 'production' ? 'https://baypetresorts.com/oauth2callback' : 'http://localhost:3000/oauth2callback')));
+      console.error('   2. The OAuth redirect URI matches: ' + (((process.env.GOOGLE_REDIRECT_URI || '').trim()) || DEFAULT_OAUTH_REDIRECT_URI));
       console.error('   3. Your refresh token is valid');
     }
 
@@ -274,9 +282,9 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
   const serverUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://baypetresorts.com' 
+    ? 'https://baypetventures.com' 
     : `http://localhost:${PORT}`;
-  console.log(`🚀 Bay Pet Resorts server running on ${serverUrl}`);
+  console.log(`🚀 Bay Pet Ventures server running on ${serverUrl}`);
   console.log(`📋 Environment: ${process.env.NODE_ENV || 'development'}`);
   if (!sheets) {
     console.log('ℹ️  Google Sheets not configured. Form submissions will be logged to console only.');

@@ -1,4 +1,4 @@
-// Bay Pet Resorts - Registration Form Handler
+// Bay Pet Ventures - Registration Form Handler
 document.addEventListener('DOMContentLoaded', function() {
     // Constants
     const TOTAL_STEPS = 3;

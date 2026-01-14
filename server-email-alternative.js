@@ -55,7 +55,7 @@ app.get('/api/locations', (req, res) => {
   const mockLocations = [
     {
       id: 1,
-      name: 'Bay Pet Resorts - Main Location',
+      name: 'Bay Pet Ventures - Main Location',
       address: '123 Pet Care Blvd',
       city: 'San Francisco',
       state: 'CA',
@@ -118,7 +118,7 @@ ${message || 'No message provided'}
       const recipientEmail = process.env.CONTACT_EMAIL || emailConfig.auth.user;
       
       await transporter.sendMail({
-        from: `"Bay Pet Resorts Website" <${emailConfig.auth.user}>`,
+        from: `"Bay Pet Ventures Website" <${emailConfig.auth.user}>`,
         to: recipientEmail,
         replyTo: email, // So you can reply directly to the submitter
         subject: emailSubject,
@@ -160,7 +160,7 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Bay Pet Resorts server running on http://localhost:${PORT}`);
+  console.log(`🚀 Bay Pet Ventures server running on http://localhost:${PORT}`);
   if (!transporter) {
     console.log('ℹ️  Email not configured. Form submissions will be logged to console only.');
     console.log('   See SETUP.md for instructions on setting up email integration.');

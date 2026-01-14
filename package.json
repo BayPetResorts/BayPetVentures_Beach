@@ -1,7 +1,7 @@
 {
-  "name": "bay-pet-resorts-website",
+  "name": "bay-pet-ventures-website",
   "version": "1.0.0",
-  "description": "Bay Pet Resorts - Luxury Pet Care Website",
+  "description": "Bay Pet Ventures - Luxury Pet Care Website",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
