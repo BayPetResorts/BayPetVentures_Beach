@@ -2180,6 +2180,9 @@ body {
     border: 2px solid transparent;
     position: relative;
     overflow: hidden;
+    width: 100%;
+    min-height: 120px;
+    justify-content: center;
 }
 
 .contact-btn span:first-of-type {
