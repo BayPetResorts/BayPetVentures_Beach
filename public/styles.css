@@ -216,29 +216,6 @@ body {
     opacity: 0.7;
 }
 
-.btn-find-resort {
-    background-color: var(--primary-blue);
-    color: var(--white);
-    border: none;
-    padding: 12px 24px;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.2s, transform 0.1s;
-    white-space: nowrap;
-}
-
-.btn-find-resort:hover {
-    background-color: #152A47;
-    transform: translateY(-1px);
-}
-
-.btn-find-resort:active {
-    transform: translateY(0);
-}
-
 .btn-contact-header {
     background-color: var(--primary-blue);
     color: var(--white);
@@ -329,58 +306,6 @@ body {
     letter-spacing: -0.5px;
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
     margin: 0;
-}
-
-.search-box {
-    display: flex;
-    gap: 12px;
-    margin-top: 20px;
-    max-width: 500px;
-}
-
-.zip-input {
-    flex: 1;
-    padding: 14px 18px;
-    font-size: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-    background-color: rgba(255, 255, 255, 0.95);
-    color: var(--text-dark);
-    font-family: inherit;
-    transition: border-color 0.2s, background-color 0.2s;
-}
-
-.zip-input:focus {
-    background-color: var(--white);
-    border-color: var(--white);
-}
-
-
-.zip-input::placeholder {
-    color: #999;
-}
-
-.btn-search {
-    background-color: var(--primary-blue);
-    color: var(--white);
-    border: none;
-    padding: 14px 32px;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.2s, transform 0.1s;
-    white-space: nowrap;
-}
-
-.btn-search:hover {
-    background-color: #152A47;
-    transform: translateY(-1px);
-}
-
-.btn-search:active {
-    transform: translateY(0);
 }
 
 .btn-register-dog {
@@ -810,12 +735,6 @@ body {
         border-bottom: none;
     }
 
-
-    .btn-find-resort {
-        padding: 10px 20px;
-        font-size: 13px;
-    }
-
     .hero-content {
         padding: 0 20px;
         gap: 30px;
@@ -823,15 +742,6 @@ body {
 
     .hero-headline {
         font-size: 36px;
-    }
-
-
-    .search-box {
-        flex-direction: column;
-    }
-
-    .btn-search {
-        width: 100%;
     }
 
     .top-bar-content {
@@ -1168,7 +1078,7 @@ body {
     border-radius: 6px;
     transition: background-color 0.2s, transform 0.1s;
     text-transform: uppercase;
-    margin-top: 10px;
+    margin-top: 4px;
     box-sizing: border-box;
     height: 48px;
     display: inline-flex;
@@ -1436,6 +1346,103 @@ body {
     margin-bottom: 0;
 }
 
+/* Vaccination Accordion */
+.vaccination-accordion {
+    background-color: var(--white);
+    border: 2px solid var(--beige-light);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+
+.vaccination-accordion.active {
+    border-color: var(--primary-blue);
+}
+
+.vaccination-accordion-header {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 16px;
+    font-family: inherit;
+    font-weight: 600;
+    border: none;
+    background-color: transparent;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: opacity 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+}
+
+.vaccination-accordion-header:hover {
+    opacity: 0.8;
+}
+
+.vaccination-accordion-header:focus {
+    outline: none;
+    opacity: 0.8;
+}
+
+.vaccination-accordion-title {
+    flex: 1;
+    color: var(--primary-blue);
+}
+
+.vaccination-accordion-icon {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: 12px;
+}
+
+.vaccination-accordion-plus,
+.vaccination-accordion-minus {
+    position: absolute;
+    color: var(--primary-blue);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.vaccination-accordion-plus {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.vaccination-accordion-minus {
+    opacity: 0;
+    transform: scale(0);
+}
+
+.vaccination-accordion.active .vaccination-accordion-plus {
+    opacity: 0;
+    transform: scale(0);
+}
+
+.vaccination-accordion.active .vaccination-accordion-minus {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.vaccination-accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    padding: 0 20px;
+}
+
+.vaccination-accordion.active .vaccination-accordion-content {
+    max-height: 1000px;
+    padding: 20px;
+}
+
 /* Vaccination Cards */
 .vaccination-list {
     display: flex;
@@ -1517,6 +1524,15 @@ body {
 }
 
 @media (max-width: 768px) {
+    .vaccination-accordion-header {
+        padding: 14px 16px;
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    .vaccination-accordion.active .vaccination-accordion-content {
+        padding: 16px;
+    }
+    
     .vaccination-item {
         padding: 14px 16px;
         gap: 10px;
@@ -1771,13 +1787,25 @@ body {
 
 /* Register Page Styles */
 .register-page {
-    min-height: calc(100vh - 200px);
-    padding: 60px 0;
+    min-height: 100vh;
+    padding: 20px 0;
     background-color: var(--beige-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.register-page .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
 }
 
 .register-content {
     max-width: 700px;
+    width: 100%;
     margin: 0 auto;
     background-color: var(--white);
     border-radius: 12px;
@@ -1796,7 +1824,8 @@ body {
 
 @media (max-width: 768px) {
     .register-page {
-        padding: 40px 0;
+        min-height: 100vh;
+        padding: 20px 0;
     }
 
     .register-content {

@@ -106,26 +106,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function resetForm() {
-        if (contactForm) {
-            contactForm.reset();
-            currentStep = 1;
-            clearErrors();
-            showStep(1);
-            hideSuccessScreen();
-        }
-    }
-    
     function showSuccessScreen() {
         if (contactForm) contactForm.style.display = 'none';
         if (progressTrack) progressTrack.style.display = 'none';
         if (successScreen) successScreen.style.display = 'flex';
-    }
-    
-    function hideSuccessScreen() {
-        if (successScreen) successScreen.style.display = 'none';
-        if (contactForm) contactForm.style.display = 'block';
-        if (progressTrack) progressTrack.style.display = 'flex';
     }
     
     // Step Navigation
@@ -382,6 +366,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Track successful registration completion
                 trackRegistrationComplete(formData);
                 showSuccessScreen();
+                // Scroll instantly to center of success screen
+                setTimeout(() => {
+                    if (successScreen) {
+                        successScreen.scrollIntoView({ 
+                            behavior: 'instant', 
+                            block: 'center' 
+                        });
+                    }
+                }, 0);
             } else {
                 showError(data.error || 'Something went wrong. Please try again.');
                 resetSubmitButton(submitBtn, originalBtnText);
@@ -632,43 +625,76 @@ document.addEventListener('DOMContentLoaded', function() {
         return isValid;
     }
     
-    // Initialize vaccination card click handlers
+    // Initialize vaccination accordion and card click handlers
     function initializeVaccinationCards() {
+        const vaccinationAccordion = document.querySelector('.vaccination-accordion');
+        const vaccinationHeader = document.getElementById('vaccinationAccordion');
         const vaccinationItems = document.querySelectorAll('.vaccination-item');
         
-        vaccinationItems.forEach(item => {
-            const vaccinationType = item.dataset.vaccination;
-            const fileInput = item.querySelector('input[type="file"]');
-            const fileNameSpan = item.querySelector('.vaccination-file-name');
-            
-            if (!fileInput) return;
-            
-            // Click on card to trigger file input
-            item.addEventListener('click', (e) => {
-                // Don't trigger if clicking on the file name (for potential future remove functionality)
-                if (e.target.classList.contains('vaccination-file-name')) {
-                    return;
-                }
-                fileInput.click();
+        // Initialize accordion toggle
+        if (vaccinationHeader && vaccinationAccordion) {
+            vaccinationHeader.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                vaccinationAccordion.classList.toggle('active');
             });
             
-            // Handle file selection
-            fileInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    item.classList.add('has-file');
-                    fileNameSpan.textContent = file.name;
-                } else {
-                    item.classList.remove('has-file');
-                    fileNameSpan.textContent = '';
-                }
+            // Initialize vaccination item click handlers
+            vaccinationItems.forEach(item => {
+                const fileInput = item.querySelector('input[type="file"]');
+                const fileNameSpan = item.querySelector('.vaccination-file-name');
+                
+                if (!fileInput) return;
+                
+                // Click on card to trigger file input
+                item.addEventListener('click', (e) => {
+                    // Don't trigger if clicking on the file name (for potential future remove functionality)
+                    if (e.target.classList.contains('vaccination-file-name')) {
+                        return;
+                    }
+                    fileInput.click();
+                });
+                
+                // Handle file selection
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        item.classList.add('has-file');
+                        fileNameSpan.textContent = file.name;
+                    } else {
+                        item.classList.remove('has-file');
+                        fileNameSpan.textContent = '';
+                    }
+                });
             });
-        });
+        }
     }
     
     initializeFormFields();
     initializeBreedDropdown();
     initializeVaccinationCards();
     initializeTabTracking();
+    
+    // Scroll to center the form when page loads
+    function scrollToForm() {
+        const form = document.getElementById('contactForm');
+        if (form) {
+            // Use setTimeout to ensure all content is loaded
+            setTimeout(() => {
+                form.scrollIntoView({ 
+                    behavior: 'instant', 
+                    block: 'center' 
+                });
+            }, 100);
+        }
+    }
+    
+    // Scroll on page load
+    scrollToForm();
+    
+    // Also scroll if page is already loaded (for cases where DOMContentLoaded fires late)
+    if (document.readyState === 'complete') {
+        scrollToForm();
+    }
 });
 

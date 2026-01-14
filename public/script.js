@@ -200,7 +200,6 @@ document.addEventListener('DOMContentLoaded', function() {
         let isPaused = false;
         const scrollSpeed = 1.5; // pixels per frame
         const itemWidth = 350; // width of each testimonial item including gap (320px + 30px gap)
-        const totalItems = testimonialsTrack.querySelectorAll('.testimonial-item').length;
         const originalItemsCount = 30; // Number of original testimonials (before duplicates)
         const resetPoint = originalItemsCount * itemWidth;
         
