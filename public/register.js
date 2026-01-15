@@ -5,6 +5,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const MIN_PHONE_LENGTH = 10;
     
+    // Conversion value per registration (lead value)
+    // This represents the value of a lead, not the service price
+    // Calculation: Service Price ($200) × Conversion Rate (20%) = $40 per lead
+    const CONVERSION_VALUE = 40.00;
+    
     // DOM Elements
     const contactForm = document.getElementById('contactForm');
     const formMessage = document.getElementById('formMessage');
@@ -236,36 +241,73 @@ document.addEventListener('DOMContentLoaded', function() {
             formStartTime = Date.now();
             fbq('track', 'InitiateCheckout', {
                 content_name: 'Dog Registration',
-                content_category: 'Registration',
-                test_event_code: 'TEST73273'
+                content_category: 'Registration'
             });
         }
     }
     
     function trackRegistrationComplete(formData) {
+        if (!formData) return;
+        
         // Update total time on page before tracking
         const now = Date.now();
         if (isPageVisible) {
             totalTimeOnPage += now - tabStartTime;
         }
         
-        if (typeof fbq !== 'undefined' && formData) {
-            const timeSpent = formStartTime ? Math.round((now - formStartTime) / 1000) : 0;
-            const totalTimeOnPageSeconds = Math.round(totalTimeOnPage / 1000);
-            
-            fbq('track', 'CompleteRegistration', {
-                content_name: 'Dog Registration',
-                content_category: 'Registration',
-                value: 199.00,
-                currency: 'USD',
-                time_spent: timeSpent,
-                total_time_on_page: totalTimeOnPageSeconds,
-                time_in_background: Math.round(timeInBackground / 1000),
-                dog_name: formData.dogName || '',
-                breed: formData.breed || '',
-                test_event_code: 'TEST73273'
-            });
+        const timeSpent = formStartTime ? Math.round((now - formStartTime) / 1000) : 0;
+        const totalTimeOnPageSeconds = Math.round(totalTimeOnPage / 1000);
+        
+        // Check if this is a test submission (via URL parameter ?test=true or localStorage flag)
+        const urlParams = new URLSearchParams(window.location.search);
+        const isTest = urlParams.get('test') === 'true' || localStorage.getItem('metaPixelTestMode') === 'true';
+        
+        const eventParams = {
+            content_name: 'Dog Registration',
+            content_category: 'Registration',
+            value: CONVERSION_VALUE,
+            currency: 'USD',
+            time_spent: timeSpent,
+            total_time_on_page: totalTimeOnPageSeconds,
+            time_in_background: Math.round(timeInBackground / 1000),
+            dog_name: formData.dogName || '',
+            breed: formData.breed || ''
+        };
+        
+        // Add test event code if in test mode
+        if (isTest) {
+            eventParams.test_event_code = 'TEST73273';
+            console.log('🧪 Test mode: Events will be marked as TEST in Meta Pixel');
         }
+        
+        // Ensure fbq is available - wait for it to load if needed
+        let retryCount = 0;
+        const maxRetries = 20; // Max 2 seconds of retries
+        
+        function trackEvent() {
+            if (typeof fbq === 'undefined') {
+                retryCount++;
+                if (retryCount < maxRetries) {
+                    // Wait a bit and try again if fbq isn't loaded yet
+                    setTimeout(trackEvent, 100);
+                } else {
+                    console.warn('Meta Pixel (fbq) not loaded after retries. Event not tracked.');
+                }
+                return;
+            }
+            
+            // Track both CompleteRegistration and Lead events for better coverage
+            try {
+                fbq('track', 'CompleteRegistration', eventParams);
+                fbq('track', 'Lead', eventParams);
+                console.log('Meta Pixel events tracked:', eventParams);
+            } catch (error) {
+                console.error('Error tracking Meta Pixel events:', error);
+            }
+        }
+        
+        // Start tracking
+        trackEvent();
     }
     
     function trackTabSwitch(isVisible) {
@@ -279,8 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
             isPageVisible = false;
             if (typeof fbq !== 'undefined') {
                 fbq('trackCustom', 'TabSwitchedAway', {
-                    time_on_page: Math.round(totalTimeOnPage / 1000),
-                    test_event_code: 'TEST73273'
+                    time_on_page: Math.round(totalTimeOnPage / 1000)
                 });
             }
         } else if (!isPageVisible && isVisible) {
@@ -292,8 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (typeof fbq !== 'undefined') {
                 fbq('trackCustom', 'TabSwitchedBack', {
                     time_in_background: Math.round(timeInBackgroundThisSession / 1000),
-                    total_time_in_background: Math.round(timeInBackground / 1000),
-                    test_event_code: 'TEST73273'
+                    total_time_in_background: Math.round(timeInBackground / 1000)
                 });
             }
         }
@@ -365,6 +405,17 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok) {
                 // Track successful registration completion
                 trackRegistrationComplete(formData);
+                
+                // Track form submission in Vercel Analytics
+                if (typeof window.trackVercelEvent === 'function') {
+                    window.trackVercelEvent('FormSubmission', {
+                        formType: 'dog_registration',
+                        status: 'success',
+                        dogName: formData.dogName,
+                        breed: formData.breed
+                    });
+                }
+                
                 showSuccessScreen();
                 // Scroll instantly to center of success screen
                 setTimeout(() => {
@@ -376,10 +427,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }, 0);
             } else {
+                // Track failed form submission in Vercel Analytics
+                if (typeof window.trackVercelEvent === 'function') {
+                    window.trackVercelEvent('FormSubmission', {
+                        formType: 'dog_registration',
+                        status: 'error',
+                        error: data.error || 'Unknown error'
+                    });
+                }
+                
                 showError(data.error || 'Something went wrong. Please try again.');
                 resetSubmitButton(submitBtn, originalBtnText);
             }
         } catch (error) {
+            // Track network error in Vercel Analytics
+            if (typeof window.trackVercelEvent === 'function') {
+                window.trackVercelEvent('FormSubmission', {
+                    formType: 'dog_registration',
+                    status: 'network_error',
+                    error: error.message || 'Network error'
+                });
+            }
+            
             showError('Network error. Please check your connection and try again.');
             resetSubmitButton(submitBtn, originalBtnText);
         }

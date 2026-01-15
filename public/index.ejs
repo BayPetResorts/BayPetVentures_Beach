@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : 'Bay Pet Ventures - Luxury Pet Care' %></title>
+    <link rel="icon" type="image/png" href="/assets/images/BayPetLogo.png">
+    <link rel="apple-touch-icon" href="/assets/images/BayPetLogo.png">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <%- include('components/meta-pixel') %>
+</head>
+<body>
+    <!-- Discount Banner -->
+    <div class="discount-banner" id="discountBanner">
+        <div class="discount-banner-content">
+            <span class="discount-banner-text">🎉 Get $50 off this <span id="currentMonth"></span>! Limited time offer.</span>
+            <button class="discount-banner-close" id="discountBannerClose" aria-label="Close banner">×</button>
+        </div>
+    </div>
+    <div id="header-placeholder"></div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-video-container">
+            <video class="hero-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
+                <source src="/assets/videos/DogRunningOnBeach.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="hero-overlay">
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h1 class="hero-headline">
+                            Beach trips for your dog.<br>
+                            Happiness Gauranteed.
+                        </h1>
+                        <a href="/register" class="btn-register-dog">Register Your Dog</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- All-Inclusive Package Section -->
+    <section class="package-offer-section">
+        <div class="container">
+            <h2 class="package-offer-title">The All-Inclusive Package</h2>
+            <div class="package-offer-content">
+                <div class="package-features">
+                    <div class="package-feature-item">
+                        <span class="package-feature-check">✓</span>
+                        <span class="package-feature-text">Door-to-door pickup & drop-off <span class="package-feature-value">($60 value)</span></span>
+                    </div>
+                    <div class="package-feature-item">
+                        <span class="package-feature-check">✓</span>
+                        <span class="package-feature-text">Beach Adventure & Socialization <span class="package-feature-value">($90 value)</span></span>
+                    </div>
+                    <div class="package-feature-item">
+                        <span class="package-feature-check">✓</span>
+                        <span class="package-feature-text">Luxury Treats Snack Break <span class="package-feature-value">($10 value)</span></span>
+                    </div>
+                    <div class="package-feature-item">
+                        <span class="package-feature-check">✓</span>
+                        <span class="package-feature-text">Bath, Brush & Shampoo Refresh <span class="package-feature-value">($40 value)</span></span>
+                    </div>
+                    <div class="package-feature-item">
+                        <span class="package-feature-check">✓</span>
+                        <span class="package-feature-text">Photo/Video Report Card <span class="package-feature-value">(Priceless)</span></span>
+                    </div>
+                </div>
+                <div class="package-pricing">
+                    <div class="package-total-value">Total Value: <span class="package-total-amount">$250</span></div>
+                    <div class="package-price">$199</div>
+                    <a href="/register" class="btn-package-cta">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials-section">
+        <div class="container">
+            <h2 class="testimonials-title">What Our Customers Say</h2>
+            <div class="testimonials-container">
+                <div class="testimonials-track" id="testimonialsTrack">
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"Charles is incredibly professional and knowledgeable. You can tell he's a certified trainer, not just a dog walker. My 4-year-old Lab mix, Max, was so lazy and understimulated - he'd just sleep all day and had zero energy. Now he comes home completely exhausted and sleeps for hours, but he's actually happy and engaged. Worth every penny!"</p>
+                            <p class="testimonial-author">— Sarah M.</p>
+                            <p class="testimonial-location">San Jose, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"I used to feel so guilty leaving my 3-year-old Border Collie, Cooper, at home all day while I worked. He's such an intelligent, energetic dog but was getting so lazy and understimulated. Now I know he's getting 4 hours of real exercise at Santa Cruz beach, practicing recall with distractions, and coming home completely satisfied. The peace of mind is priceless."</p>
+                            <p class="testimonial-author">— Michael R.</p>
+                            <p class="testimonial-location">Santa Clara, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"My small terrier, Bella, is usually so anxious and high-strung - she used to bark and freak out at every dog we passed. After a few sessions, she's so much calmer. The one-on-one attention made all the difference. She doesn't react to other dogs anymore!"</p>
+                            <p class="testimonial-author">— Jennifer L.</p>
+                            <p class="testimonial-location">Sunnyvale, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"I can't stand the thought of my 5-year-old Beagle, Charlie, stuck in a windowless kennel with 20 other dogs of unknown temperament. He's such a curious, social dog but was getting lazy and understimulated at home. This is so much better - real exercise, fresh air, and professional supervision. Charlie is exhausted and happy!"</p>
+                            <p class="testimonial-author">— David K.</p>
+                            <p class="testimonial-location">Mountain View, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"The professionalism here is unmatched. Charles texts me updates throughout the day, arrives exactly at 8am for pickup, and my 5-year-old German Shepherd, Thor, always comes back completely worn out from West Cliff beach. Thor is such a loyal, protective dog but was getting lazy and understimulated. Now he sleeps like a rock for 12 hours straight!"</p>
+                            <p class="testimonial-author">— Emily T.</p>
+                            <p class="testimonial-location">Palo Alto, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"I felt terrible that my 2-year-old Australian Shepherd, Luna, wasn't getting enough exercise. She's such an energetic, playful dog but was becoming lazy and understimulated. This service has been a game-changer. She comes home so tired and content after running on the beach for 4 hours, and I finally don't feel guilty anymore. Luna sleeps for 8 hours straight now!"</p>
+                            <p class="testimonial-author">— Robert P.</p>
+                            <p class="testimonial-location">Los Gatos, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"My 8-pound Yorkie, Daisy, is such a feisty little thing - she was a nightmare on walks, barking at everything. After working with Charles, she's transformed. No more reactive barking, and she's so much calmer around other dogs!"</p>
+                            <p class="testimonial-author">— Lisa W.</p>
+                            <p class="testimonial-location">Saratoga, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"After seeing how cramped and stressful traditional daycares are, I'll never go back. My 3-year-old Boxer, Rocky, is such a goofy, affectionate dog but was getting lazy and understimulated. Now he gets real beach time, professional training, and comes home exhausted. This is how dog care should be!"</p>
+                            <p class="testimonial-author">— James H.</p>
+                            <p class="testimonial-location">Cupertino, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"Charles is a true professional. His CCPDT certification and training background shows in how he handles my 2-year-old Corgi, Winston. Winston is such a smart, stubborn little guy - he comes home completely wiped out after the beach adventure and smelling fresh from the premium shampoo they use. The quality of service is exceptional - worth every dollar!"</p>
+                            <p class="testimonial-author">— Amanda C.</p>
+                            <p class="testimonial-location">Campbell, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"I used to feel guilty that my 4-year-old Golden Retriever, Buddy, spent 10 hours alone while I worked. Buddy is such a friendly, gentle soul but was getting so lazy and understimulated. Now he gets proper exercise at the beach twice a week, and I can see how much happier and more tired he is. The video report cards show him playing in the waves - the guilt is completely gone!"</p>
+                            <p class="testimonial-author">— Thomas B.</p>
+                            <p class="testimonial-location">Milpitas, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"My 3-year-old Miniature Schnauzer, Pepper, is such a spunky, alert dog - she was so reactive before, barking and lunging at every dog within 50 feet. After 6 sessions with Charles at the beach, she's calm and doesn't bark at other dogs anymore. The one-on-one attention and professional training approach made all the difference!"</p>
+                            <p class="testimonial-author">— Nicole S.</p>
+                            <p class="testimonial-location">Fremont, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"The thought of my 4-year-old Bulldog, Bruno, in a windowless room with 20 other dogs gives me anxiety. Bruno is such a laid-back, easygoing dog but was getting lazy and understimulated at home. This service is humane and professional. He gets real exercise and comes home completely exhausted!"</p>
+                            <p class="testimonial-author">— Mark D.</p>
+                            <p class="testimonial-location">Redwood City, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"The professionalism is outstanding. Charles knows exactly what he's doing with my 18-month-old Weimaraner, Stella. Stella is such an energetic, intelligent dog - she always comes back so tired from the beach adventure that she can barely keep her eyes open. Perfect for my high-energy pup who used to destroy furniture out of boredom!"</p>
+                            <p class="testimonial-author">— Rachel F.</p>
+                            <p class="testimonial-location">Menlo Park, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"I felt so guilty not being able to give my 3-year-old Boxer, Duke, enough exercise during my 60-hour work weeks. Duke is such a playful, goofy dog but was getting so lazy and understimulated. This service has been a lifesaver. He comes home exhausted and happy after beach sessions, and I finally feel like a good dog parent! The door-to-door pickup saves me 2 hours of driving."</p>
+                            <p class="testimonial-author">— Kevin J.</p>
+                            <p class="testimonial-location">San Jose, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"My tiny Chihuahua mix, Lola, used to be a barking machine. After working with Charles, she's so much calmer and doesnt react to other dogs anymore. The professional training approach really works!"</p>
+                            <p class="testimonial-author">— Michelle G.</p>
+                            <p class="testimonial-location">Santa Clara, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"Traditional daycares are inhumane - cramming dogs into small spaces. This is real care. My 3-year-old Pit Bull mix, Tank, gets beach time, professional supervision, and comes home completely worn out. So much better!"</p>
+                            <p class="testimonial-author">— Brian N.</p>
+                            <p class="testimonial-location">Sunnyvale, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"Charles is incredibly professional and my 2-year-old Shiba Inu, Kiko, always comes back exhausted. The quality of service and attention to detail is unmatched. Kiko sleeps for hours after each visit!"</p>
+                            <p class="testimonial-author">— Stephanie A.</p>
+                            <p class="testimonial-location">Mountain View, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"I used to feel guilty leaving my 6-year-old Vizsla, Rusty, home alone all day. Rusty is such an athletic, affectionate dog but was getting lazy and understimulated. Now I know he's getting proper exercise and adventure at Santa Cruz beach. He comes home so tired and content, and the photo report cards show him having the time of his life. The guilt is completely gone!"</p>
+                            <p class="testimonial-author">— Daniel M.</p>
+                            <p class="testimonial-location">Palo Alto, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"My small Poodle mix, Sophie, doesnt freak out and bark at other dogs anymore! The one-on-one professional training has been transformative. She's so much calmer now!"</p>
+                            <p class="testimonial-author">— Christina R.</p>
+                            <p class="testimonial-location">Los Gatos, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"My 4-year-old Newfoundland, Bear, finally learned to swim! I'd tried everything, but Charles's patient approach at the beach worked. Now Bear loves the water and I have the video to prove it. Amazing!"</p>
+                            <p class="testimonial-author">— Andrew L.</p>
+                            <p class="testimonial-location">Saratoga, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"The professionalism here is top-notch. My 4-year-old Belgian Malinois, Zeus, is such a driven, loyal dog - he comes home completely exhausted after 4 hours at the beach and sleeps like a baby for 10 hours. No more guilt about not giving him enough exercise! The structured socialization has improved his reactivity by 90%."</p>
+                            <p class="testimonial-author">— Patricia K.</p>
+                            <p class="testimonial-location">Menlo Park, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"Door-to-door transport is a lifesaver for busy professionals! Charles returned my 3-year-old Golden Retriever, Finn, exhausted, obedient, and completely sand-free."</p>
+                            <p class="testimonial-author">— Anonymous</p>
+                            <p class="testimonial-location">San Jose, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"I was terrified to let my reactive rescue, Ollie, off leash, but knowing this is run by a CCPDT-Certified trainer changed everything. The video report card proved he was safe!"</p>
+                            <p class="testimonial-author">— Anonymous</p>
+                            <p class="testimonial-location">Cupertino, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"Literally obsessed with the video report card! Charles is super chill and I love that he just picks up my 2-year-old Border Collie, Ruby. Best part is she came back super clean and didnt track sand all over."</p>
+                            <p class="testimonial-author">— Anonymous</p>
+                            <p class="testimonial-location">Campbell, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"I did the math - between gas, time, grooming, and training costs, this package is a steal at $199. They practice recall in a high-distraction beach environment I cant replicate. My 5-year-old Lab, Jake, slept for 6 hours straight afterwards!"</p>
+                            <p class="testimonial-author">— Anonymous</p>
+                            <p class="testimonial-location">Palo Alto, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"If you have a high-energy Husky, the wear out promise is accurate because my 3-year-old Husky, Loki, was knocked out cold all evening, giving me a peaceful night for the first time in months!"</p>
+                            <p class="testimonial-author">— Anonymous</p>
+                            <p class="testimonial-location">Mountain View, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"Charles is amazing with animals! My 4-year-old Afghan Hound Zara's recall improved after just one session. Worth every penny to have her come home tired and happy. The 1:1 attention is great - highly recommend!"</p>
+                            <p class="testimonial-author">— Brian L.</p>
+                            <p class="testimonial-location">Foster City, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"I'm so proud - my 3-year-old Golden Retriever, Sam, finally learned to swim! He was always too scared before, but Charles's gentle encouragement at the beach changed everything. The video report card captured his first swim and its my favorite memory!"</p>
+                            <p class="testimonial-author">— Anonymous</p>
+                            <p class="testimonial-location">Burlingame, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"I was hesitant about the 'Socialization not Chaos' claim, but this was totally different. Led by a professional trainer, not just a dog walker. Perfect balance of fun and discipline. The photo report card was professional quality!"</p>
+                            <p class="testimonial-author">— Anonymous</p>
+                            <p class="testimonial-location">Sunnyvale, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"Best service in south bay area hands down. My 2-year-old chocolate Lab, Cocoa, barks alot usually but came home so quiet and calm. Charles arrived on time and was very professional. Would use them everyday if I could!"</p>
+                            <p class="testimonial-author">— Anonymous</p>
+                            <p class="testimonial-location">Santa Clara, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"My 5-year-old German Shepherd, Rex, was terrified of water and would never go near it. After a few beach sessions with Charles, he finally learned to swim! Now he loves the water and I cant believe the transformation. The patient, professional approach made all the difference."</p>
+                            <p class="testimonial-author">— Anonymous</p>
+                            <p class="testimonial-location">Redwood City, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"I've been trying to get my 6-year-old Lab, Marley, to swim for years with no success. Charles worked with him at the beach and now he's a confident swimmer! The video report card showed him swimming for the first time - I cried happy tears!"</p>
+                            <p class="testimonial-author">— Anonymous</p>
+                            <p class="testimonial-location">Fremont, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"My 4-year-old Lab, Bailey, was always afraid of the water despite being a water breed. After working with Charles at the beach, he finally learned to swim! Now he's like a different dog - confident and happy in the water. Best investment ever!"</p>
+                            <p class="testimonial-author">— Anonymous</p>
+                            <p class="testimonial-location">Los Altos, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"I never thought my dog would learn to swim. He was so scared of water. But Charles was patient and professional, and now my pup is swimming like a pro! The beach environment was perfect for building his confidence."</p>
+                            <p class="testimonial-author">— Anonymous</p>
+                            <p class="testimonial-location">San Mateo, CA</p>
+                        </div>
+                    </div>
+                    <!-- Duplicate items are created dynamically by script.js for seamless loop -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/utils/tab-tracking.js"></script>
+    <script type="module" src="/utils/vercel-analytics.js"></script>
+    <script src="components.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
