@@ -575,10 +575,10 @@ body {
 
     .testimonial-content {
         background-color: var(--white);
-        padding: 30px;
+        padding: 24px;
         border-radius: 12px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        height: 100%;
+        height: auto;
         display: flex;
         flex-direction: column;
         transition: transform 0.2s, box-shadow 0.2s;
@@ -597,11 +597,11 @@ body {
     }
 
     .testimonial-text {
-        font-size: 16px;
-        line-height: 1.7;
+        font-size: 15px;
+        line-height: 1.6;
         color: var(--text-dark);
-        margin-bottom: 20px;
-        flex: 1;
+        margin-bottom: 12px;
+        flex: 0;
     }
 
     .testimonial-author {
@@ -797,16 +797,17 @@ body {
     }
 
     .testimonial-content {
-        padding: 24px;
+        padding: 20px;
     }
 
     .testimonial-stars {
         font-size: 16px;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
 
     .testimonial-text {
-        font-size: 15px;
+        font-size: 14px;
+        margin-bottom: 10px;
     }
 
     .testimonial-location {
