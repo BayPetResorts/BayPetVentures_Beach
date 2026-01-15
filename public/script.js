@@ -47,6 +47,23 @@ document.addEventListener('DOMContentLoaded', function() {
         trackTabSwitch(!document.hidden);
     });
     
+    // Track when user sees the pricing section
+    const pricingSection = document.querySelector('.package-offer-section');
+    if (pricingSection) {
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                if (typeof fbq !== 'undefined') {
+                    fbq('trackCustom', 'ViewedPricing', {
+                        page_name: pageName,
+                        test_event_code: 'TEST73273'
+                    });
+                }
+                observer.disconnect(); // Only track once
+            }
+        });
+        observer.observe(pricingSection);
+    }
+    
     // Track time on page when leaving
     window.addEventListener('beforeunload', () => {
         const now = Date.now();
