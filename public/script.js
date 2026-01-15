@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (typeof fbq !== 'undefined') {
                 fbq('trackCustom', 'TabSwitchedAway', {
                     page_name: pageName,
-                    time_on_page: Math.round(totalTimeOnPage / 1000)
+                    time_on_page: Math.round(totalTimeOnPage / 1000),
+                    test_event_code: 'TEST73273'
                 });
             }
         } else if (!isPageVisible && isVisible) {
@@ -33,7 +34,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 fbq('trackCustom', 'TabSwitchedBack', {
                     page_name: pageName,
                     time_in_background: Math.round(timeInBackgroundThisSession / 1000),
-                    total_time_in_background: Math.round(timeInBackground / 1000)
+                    total_time_in_background: Math.round(timeInBackground / 1000),
+                    test_event_code: 'TEST73273'
                 });
             }
         }
@@ -55,7 +57,8 @@ document.addEventListener('DOMContentLoaded', function() {
             fbq('trackCustom', 'PageTimeSpent', {
                 page_name: pageName,
                 total_time_seconds: Math.round(totalTimeOnPage / 1000),
-                time_in_background_seconds: Math.round(timeInBackground / 1000)
+                time_in_background_seconds: Math.round(timeInBackground / 1000),
+                test_event_code: 'TEST73273'
             });
         }
     });
