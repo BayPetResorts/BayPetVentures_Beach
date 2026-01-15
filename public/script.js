@@ -1,5 +1,35 @@
 // Bay Pet Ventures - Homepage Script
 document.addEventListener('DOMContentLoaded', function() {
+    // Session Time Tracking (across all pages)
+    const SESSION_KEY = 'bpv_session';
+    const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 min inactivity = new session
+    
+    function getSession() {
+        const stored = localStorage.getItem(SESSION_KEY);
+        if (stored) {
+            const session = JSON.parse(stored);
+            const now = Date.now();
+            // If last activity was more than 30 min ago, start new session
+            if (now - session.lastActivity > SESSION_TIMEOUT) {
+                return { startTime: now, totalTime: 0, lastActivity: now, pagesVisited: [window.location.pathname] };
+            }
+            // Add current page if not already tracked
+            if (!session.pagesVisited.includes(window.location.pathname)) {
+                session.pagesVisited.push(window.location.pathname);
+            }
+            session.lastActivity = now;
+            return session;
+        }
+        return { startTime: Date.now(), totalTime: 0, lastActivity: Date.now(), pagesVisited: [window.location.pathname] };
+    }
+    
+    function saveSession(session) {
+        localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    }
+    
+    const session = getSession();
+    saveSession(session);
+    
     // Page Time Tracking for Meta Pixel
     let tabStartTime = Date.now();
     let totalTimeOnPage = 0;
@@ -70,11 +100,22 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isPageVisible) {
             totalTimeOnPage += now - tabStartTime;
         }
+        
+        // Update session with time spent on this page
+        const currentSession = getSession();
+        currentSession.totalTime += totalTimeOnPage;
+        currentSession.lastActivity = now;
+        saveSession(currentSession);
+        
+        const totalSessionTime = Math.round((now - currentSession.startTime) / 1000);
+        
         if (typeof fbq !== 'undefined') {
             fbq('trackCustom', 'PageTimeSpent', {
                 page_name: pageName,
                 total_time_seconds: Math.round(totalTimeOnPage / 1000),
                 time_in_background_seconds: Math.round(timeInBackground / 1000),
+                session_time_seconds: totalSessionTime,
+                pages_visited: currentSession.pagesVisited.length,
                 test_event_code: 'TEST73273'
             });
         }
