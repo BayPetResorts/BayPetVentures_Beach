@@ -353,21 +353,6 @@ body {
         letter-spacing: -0.5px;
     }
 
-    .package-beach-image-container {
-        text-align: center;
-        margin-bottom: 40px;
-    }
-
-    .package-beach-image {
-        max-width: 800px;
-        width: 100%;
-        height: auto;
-        border-radius: 16px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        display: block;
-        margin: 0 auto;
-    }
-
     .package-offer-content {
         max-width: 1000px;
         margin: 0 auto;
@@ -2687,32 +2672,9 @@ body {
     margin: 0 auto;
 }
 
-.service-beach-image {
-    margin: 20px 0;
-    text-align: center;
-}
-
-.beach-adventure-image {
-    max-width: 100%;
-    width: 100%;
-    height: auto;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    display: block;
-    margin: 0 auto;
-}
-
 @media (max-width: 768px) {
     .report-card-example {
         border-radius: 8px;
-    }
-
-    .beach-adventure-image {
-        border-radius: 8px;
-    }
-
-    .service-beach-image {
-        margin: 16px 0;
     }
 }
 
