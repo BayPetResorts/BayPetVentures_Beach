@@ -102,6 +102,27 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.
   }
 }
 
+// API route for Meta Pixel event logging (development only)
+app.post('/api/meta-event', (req, res) => {
+  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production') {
+    const { event, eventName, eventData, timestamp, pageUrl } = req.body;
+    
+    // Format the log message
+    const time = new Date().toLocaleTimeString();
+    console.log(`\n📊 [Meta Event] ${time}`);
+    console.log(`   Event: ${eventName || event}`);
+    if (eventData && Object.keys(eventData).length > 0) {
+      console.log(`   Data:`, JSON.stringify(eventData, null, 2).split('\n').map(line => `   ${line}`).join('\n'));
+    }
+    if (pageUrl) {
+      console.log(`   Page: ${pageUrl}`);
+    }
+    console.log('');
+  }
+  
+  res.json({ success: true });
+});
+
 // API route for contact form submission
 app.post('/api/contact', async (req, res) => {
   try {

@@ -277,25 +277,12 @@ document.addEventListener('DOMContentLoaded', function() {
             totalTimeOnPage += timeBeforeSwitch;
             tabStartTime = now;
             isPageVisible = false;
-            if (typeof fbq !== 'undefined') {
-                fbq('trackCustom', 'TabSwitchedAway', {
-                    time_on_page: Math.round(totalTimeOnPage / 1000),
-                    test_event_code: 'TEST73273'
-                });
-            }
         } else if (!isPageVisible && isVisible) {
             // Tab switched back - record time spent in background
             const timeInBackgroundThisSession = now - tabStartTime;
             timeInBackground += timeInBackgroundThisSession;
             isPageVisible = true;
             tabStartTime = now;
-            if (typeof fbq !== 'undefined') {
-                fbq('trackCustom', 'TabSwitchedBack', {
-                    time_in_background: Math.round(timeInBackgroundThisSession / 1000),
-                    total_time_in_background: Math.round(timeInBackground / 1000),
-                    test_event_code: 'TEST73273'
-                });
-            }
         }
     }
     
