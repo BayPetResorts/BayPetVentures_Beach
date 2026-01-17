@@ -1,5 +1,11 @@
 // Bay Pet Ventures - Registration Form Handler
 document.addEventListener('DOMContentLoaded', function() {
+    // Prevent duplicate execution if DOMContentLoaded fires multiple times
+    if (window.bpvRegisterPageViewTracked) {
+        return;
+    }
+    window.bpvRegisterPageViewTracked = true;
+    
     // Track page view with page name
     if (typeof fbq !== 'undefined') {
         fbq('trackCustom', 'ViewedRegister', {
@@ -374,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update session with time spent on this page
         const currentSession = getSession();
         currentSession.pageTimes['Register'] = (currentSession.pageTimes['Register'] || 0) + totalTimeOnPage;
-        currentSession.totalTime = Object.values(currentSession.pageTimes).reduce((sum, time) => sum + time, 0);
+        currentSession.totalTime = Object.values(currentSession.pageTimes).reduce((sum, time) => sum + (typeof time === 'number' ? time : 0), 0);
         currentSession.lastActivity = now;
         saveSession(currentSession);
         

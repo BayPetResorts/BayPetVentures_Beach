@@ -1,9 +1,19 @@
 // Bay Pet Ventures - Homepage Script
+// Prevent multiple executions
+if (window.bpvScriptLoaded) {
+    // Script already loaded, don't execute again
+} else {
+    window.bpvScriptLoaded = true;
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Prevent duplicate execution if DOMContentLoaded fires multiple times
+    if (window.bpvPageViewTracked) {
+        return;
+    }
+    window.bpvPageViewTracked = true;
     // Session Time Tracking (across all pages)
     const SESSION_KEY = 'bpv_session';
     const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 min inactivity = new session
-    
     function createNewSession() {
         const now = Date.now();
         return { 
@@ -148,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
         currentSession.pageTimes[pageName] = (currentSession.pageTimes[pageName] || 0) + totalTimeOnPage;
         
         // Calculate session total as sum of all page times (ensures accuracy)
-        currentSession.totalTime = Object.values(currentSession.pageTimes).reduce((sum, time) => sum + time, 0);
+        currentSession.totalTime = Object.values(currentSession.pageTimes).reduce((sum, time) => sum + (typeof time === 'number' ? time : 0), 0);
         
         currentSession.lastActivity = now;
         saveSession(currentSession);
@@ -370,3 +380,4 @@ document.addEventListener('DOMContentLoaded', function() {
         animate();
     }
 });
+} // End of bpvScriptLoaded check
