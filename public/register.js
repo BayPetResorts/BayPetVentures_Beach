@@ -89,8 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return el ? el.value.trim() : '';
     }
     
-    function showError(message, element = null) {
-        if (element) element.classList.add('error');
+    function showError(message) {
         if (formMessage) {
             formMessage.textContent = message;
             formMessage.className = 'form-message error';
@@ -255,6 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const now = Date.now();
         if (isPageVisible) {
             totalTimeOnPage += now - tabStartTime;
+            tabStartTime = now; // Reset to prevent double-counting in sendTotalTimeSpent
         }
         
         if (typeof fbq !== 'undefined' && formData) {
@@ -276,77 +276,136 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function trackTabSwitch(isVisible) {
+    // Track visibility changes for accurate time calculation
+    function handleVisibilityChange(isVisible) {
         const now = Date.now();
         
         if (isPageVisible && !isVisible) {
-            // Tab switched away - record time spent on page before switching
-            const timeBeforeSwitch = now - tabStartTime;
-            totalTimeOnPage += timeBeforeSwitch;
+            // Tab switched away - accumulate time and pause tracking
+            totalTimeOnPage += now - tabStartTime;
             tabStartTime = now;
             isPageVisible = false;
-            if (typeof fbq !== 'undefined') {
-                fbq('trackCustom', 'TabSwitchedAway', {
-                    time_on_page: Math.round(totalTimeOnPage / 1000),
-                    test_event_code: 'TEST73273'
-                });
-            }
         } else if (!isPageVisible && isVisible) {
-            // Tab switched back - record time spent in background
-            const timeInBackgroundThisSession = now - tabStartTime;
-            timeInBackground += timeInBackgroundThisSession;
-            isPageVisible = true;
+            // Tab switched back - track background time and resume
+            timeInBackground += now - tabStartTime;
             tabStartTime = now;
-            if (typeof fbq !== 'undefined') {
-                fbq('trackCustom', 'TabSwitchedBack', {
-                    time_in_background: Math.round(timeInBackgroundThisSession / 1000),
-                    total_time_in_background: Math.round(timeInBackground / 1000),
-                    test_event_code: 'TEST73273'
-                });
-            }
+            isPageVisible = true;
         }
     }
     
-    // Tab Visibility Tracking
-    function initializeTabTracking() {
-        // Use visibilitychange as primary method (more reliable)
-        document.addEventListener('visibilitychange', () => {
-            trackTabSwitch(!document.hidden);
-        });
+    // Initialize visibility tracking
+    document.addEventListener('visibilitychange', () => {
+        handleVisibilityChange(!document.hidden);
+    });
+    
+    // Session tracking (shared with script.js)
+    const SESSION_KEY = 'bpv_session';
+    const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 min inactivity = new session
+    
+    function createNewSession() {
+        const now = Date.now();
+        return { 
+            totalTime: 0, 
+            lastActivity: now, 
+            pagesVisited: [window.location.pathname],
+            pageTimes: {}
+        };
+    }
+    
+    function getSession() {
+        const stored = localStorage.getItem(SESSION_KEY);
+        if (stored) {
+            try {
+                const session = JSON.parse(stored);
+                const now = Date.now();
+                // Validate session structure
+                if (!session || typeof session !== 'object' || !session.lastActivity) {
+                    return createNewSession();
+                }
+                if (now - session.lastActivity > SESSION_TIMEOUT) {
+                    return createNewSession();
+                }
+                // Initialize missing properties
+                if (!session.pagesVisited || !Array.isArray(session.pagesVisited)) {
+                    session.pagesVisited = [window.location.pathname];
+                }
+                if (!session.pageTimes || typeof session.pageTimes !== 'object') {
+                    session.pageTimes = {};
+                }
+                if (typeof session.totalTime !== 'number') {
+                    session.totalTime = 0;
+                }
+                if (!session.pagesVisited.includes(window.location.pathname)) {
+                    session.pagesVisited.push(window.location.pathname);
+                }
+                session.lastActivity = now;
+                return session;
+            } catch (e) {
+                // Corrupted localStorage data - start fresh
+                return createNewSession();
+            }
+        }
+        return createNewSession();
+    }
+    
+    function saveSession(session) {
+        localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    }
+    
+    // Initialize session
+    saveSession(getSession());
+    
+    let finalEventSent = false;
+    
+    // Function to send TotalTimeSpent event with breakdown by page (fires once on page exit)
+    function sendTotalTimeSpent() {
+        if (finalEventSent) {
+            return;
+        }
         
-        // Update total time on page when page is about to unload
-        window.addEventListener('beforeunload', () => {
-            const now = Date.now();
-            if (isPageVisible) {
-                totalTimeOnPage += now - tabStartTime;
-            }
-        });
-    }
-    
-    // CAPTCHA Functions
-    function getRecaptchaResponse() {
-        return new Promise((resolve) => {
-            if (typeof grecaptcha === 'undefined') {
-                resolve(null);
-                return;
-            }
-            const response = grecaptcha.getResponse();
-            resolve(response || null);
-        });
-    }
-    
-    function resetRecaptcha() {
-        if (typeof grecaptcha !== 'undefined') {
-            grecaptcha.reset();
+        const now = Date.now();
+        
+        if (isPageVisible) {
+            totalTimeOnPage += now - tabStartTime;
+        }
+        
+        finalEventSent = true;
+        
+        // Update session with time spent on this page
+        const currentSession = getSession();
+        currentSession.pageTimes['Register'] = (currentSession.pageTimes['Register'] || 0) + totalTimeOnPage;
+        currentSession.totalTime = Object.values(currentSession.pageTimes).reduce((sum, time) => sum + time, 0);
+        currentSession.lastActivity = now;
+        saveSession(currentSession);
+        
+        // Convert pageTimes to seconds for breakdown
+        const pageBreakdown = Object.fromEntries(
+            Object.entries(currentSession.pageTimes).map(([page, ms]) => [page, Math.round(ms / 1000)])
+        );
+        
+        // Send TotalTimeSpent event with breakdown by page
+        if (typeof fbq !== 'undefined') {
+            fbq('trackCustom', 'TotalTimeSpent', {
+                page_name: 'Register',
+                total_time_seconds: Math.round(totalTimeOnPage / 1000),
+                time_in_background_seconds: Math.round(timeInBackground / 1000),
+                session_time_seconds: Math.round(currentSession.totalTime / 1000),
+                pages_visited: currentSession.pagesVisited.length,
+                page_breakdown: pageBreakdown,
+                test_event_code: 'TEST73273'
+            });
         }
     }
     
-    function showRecaptchaError(show) {
-        const errorEl = document.getElementById('recaptcha-error');
-        if (errorEl) {
-            errorEl.style.display = show ? 'block' : 'none';
-        }
-    }
+    // Track time on page when leaving (fires once per page visit)
+    window.addEventListener('beforeunload', () => {
+        sendTotalTimeSpent();
+    });
+    
+    // Also track on pagehide (more reliable than beforeunload in some browsers)
+    window.addEventListener('pagehide', () => {
+        sendTotalTimeSpent();
+    });
     
     // Form Submission
     async function submitForm() {
@@ -356,7 +415,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const originalBtnText = submitBtn?.textContent || 'Submit';
         
         clearErrors();
-        showRecaptchaError(false);
         
         if (!validateStep(currentStep)) {
             showError('Please complete the current step.');
@@ -380,15 +438,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Verify CAPTCHA
-        const recaptchaResponse = await getRecaptchaResponse();
-        if (!recaptchaResponse) {
-            showRecaptchaError(true);
-            showError('Please complete the CAPTCHA verification.');
-            resetSubmitButton(submitBtn, originalBtnText);
-            return;
-        }
-        
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.textContent = 'Submitting...';
@@ -396,7 +445,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             const formData = collectFormData();
-            formData.recaptchaToken = recaptchaResponse;
             
             const response = await fetch('/api/contact', {
                 method: 'POST',
@@ -404,7 +452,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify(formData)
             });
             
-            const data = await response.json();
+            let data = {};
+            try {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                }
+            } catch (e) {
+                // Response is not JSON, use empty object
+            }
             
             if (response.ok) {
                 // Track successful registration completion
@@ -420,14 +476,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }, 0);
             } else {
-                // Reset CAPTCHA on error
-                resetRecaptcha();
                 showError(data.error || 'Something went wrong. Please try again.');
                 resetSubmitButton(submitBtn, originalBtnText);
             }
         } catch (error) {
-            // Reset CAPTCHA on error
-            resetRecaptcha();
             showError('Network error. Please check your connection and try again.');
             resetSubmitButton(submitBtn, originalBtnText);
         }
@@ -714,7 +766,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeFormFields();
     initializeBreedDropdown();
     initializeVaccinationCards();
-    initializeTabTracking();
     
     // Scroll to center the form when page loads
     function scrollToForm() {

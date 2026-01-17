@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function createNewSession() {
         const now = Date.now();
         return { 
-            startTime: now, 
             totalTime: 0, 
             lastActivity: now, 
             pagesVisited: [window.location.pathname],
@@ -18,22 +17,37 @@ document.addEventListener('DOMContentLoaded', function() {
     function getSession() {
         const stored = localStorage.getItem(SESSION_KEY);
         if (stored) {
-            const session = JSON.parse(stored);
-            const now = Date.now();
-            // If last activity was more than 30 min ago, start new session
-            if (now - session.lastActivity > SESSION_TIMEOUT) {
+            try {
+                const session = JSON.parse(stored);
+                const now = Date.now();
+                // Validate session structure
+                if (!session || typeof session !== 'object' || !session.lastActivity) {
+                    return createNewSession();
+                }
+                // If last activity was more than 30 min ago, start new session
+                if (now - session.lastActivity > SESSION_TIMEOUT) {
+                    return createNewSession();
+                }
+                // Initialize missing properties
+                if (!session.pagesVisited || !Array.isArray(session.pagesVisited)) {
+                    session.pagesVisited = [window.location.pathname];
+                }
+                if (!session.pageTimes || typeof session.pageTimes !== 'object') {
+                    session.pageTimes = {};
+                }
+                if (typeof session.totalTime !== 'number') {
+                    session.totalTime = 0;
+                }
+                // Add current page if not already tracked
+                if (!session.pagesVisited.includes(window.location.pathname)) {
+                    session.pagesVisited.push(window.location.pathname);
+                }
+                session.lastActivity = now;
+                return session;
+            } catch (e) {
+                // Corrupted localStorage data - start fresh
                 return createNewSession();
             }
-            // Add current page if not already tracked
-            if (!session.pagesVisited.includes(window.location.pathname)) {
-                session.pagesVisited.push(window.location.pathname);
-            }
-            // Initialize pageTimes if it doesn't exist (for old sessions)
-            if (!session.pageTimes) {
-                session.pageTimes = {};
-            }
-            session.lastActivity = now;
-            return session;
         }
         return createNewSession();
     }
@@ -95,36 +109,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Track page view with page name (e.g., "ViewedHomepage", "ViewedContactUs")
     trackEvent(getViewedEventName());
     
-    // Track tab visibility changes
-    function trackTabSwitch(isVisible) {
+    // Track tab visibility changes (for accurate time calculation only)
+    function handleVisibilityChange(isVisible) {
         const now = Date.now();
         
         if (isPageVisible && !isVisible) {
-            // Tab switched away
-            const timeBeforeSwitch = now - tabStartTime;
-            totalTimeOnPage += timeBeforeSwitch;
+            // Tab switched away - accumulate time and pause tracking
+            totalTimeOnPage += now - tabStartTime;
             tabStartTime = now;
             isPageVisible = false;
-            
-            // Update session with time spent before switching away
-            const currentSession = getSession();
-            currentSession.totalTime += timeBeforeSwitch;
-            currentSession.lastActivity = now;
-            saveSession(currentSession);
-            
-            trackEvent('TabSwitchedAway', {
-                time_on_page: Math.round(totalTimeOnPage / 1000)
-            });
         } else if (!isPageVisible && isVisible) {
-            // Tab switched back
-            const timeInBackgroundThisSession = now - tabStartTime;
-            timeInBackground += timeInBackgroundThisSession;
-            isPageVisible = true;
+            // Tab switched back - track background time and resume
+            timeInBackground += now - tabStartTime;
             tabStartTime = now;
-            trackEvent('TabSwitchedBack', {
-                time_in_background: Math.round(timeInBackgroundThisSession / 1000),
-                total_time_in_background: Math.round(timeInBackground / 1000)
-            });
+            isPageVisible = true;
         }
     }
     
@@ -136,22 +134,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         const now = Date.now();
-        let timeIncrement = 0;
         
         if (isPageVisible) {
-            timeIncrement = now - tabStartTime;
-            totalTimeOnPage += timeIncrement;
+            totalTimeOnPage += now - tabStartTime;
         }
         
         finalEventSent = true;
         
         // Update session with time spent on this page
         const currentSession = getSession();
-        // Add only the incremental time since last calculation (prevents double-counting)
-        currentSession.totalTime += timeIncrement;
         
         // Track time for this specific page (accumulate if user visits same page multiple times)
         currentSession.pageTimes[pageName] = (currentSession.pageTimes[pageName] || 0) + totalTimeOnPage;
+        
+        // Calculate session total as sum of all page times (ensures accuracy)
+        currentSession.totalTime = Object.values(currentSession.pageTimes).reduce((sum, time) => sum + time, 0);
+        
         currentSession.lastActivity = now;
         saveSession(currentSession);
         
@@ -164,23 +162,22 @@ document.addEventListener('DOMContentLoaded', function() {
         trackEvent('TotalTimeSpent', {
             total_time_seconds: Math.round(totalTimeOnPage / 1000), // Time on current page
             time_in_background_seconds: Math.round(timeInBackground / 1000),
-            session_time_seconds: Math.round(currentSession.totalTime / 1000), // Aggregate time
+            session_time_seconds: Math.round(currentSession.totalTime / 1000), // Aggregate time (sum of all pages)
             pages_visited: currentSession.pagesVisited.length,
             page_breakdown: pageBreakdown // Breakdown by page: { "Homepage": 30, "Contact Us": 45 }
         });
     }
     
-    // Initialize tab tracking
-    // Use visibilitychange as primary method (more reliable than blur/focus)
+    // Track visibility changes for accurate time calculation
     document.addEventListener('visibilitychange', () => {
-        trackTabSwitch(!document.hidden);
+        handleVisibilityChange(!document.hidden);
     });
     
     // Track when user sees the pricing section
     const pricingSection = document.querySelector('.package-offer-section');
     if (pricingSection) {
         const observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting) {
+            if (entries.length > 0 && entries[0].isIntersecting) {
                 trackEvent('ViewedPricing');
                 observer.disconnect();
             }
