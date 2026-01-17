@@ -22,7 +22,18 @@
     s.parentNode.insertBefore(t,s)}(window,document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
      fbq('init', '1375484534303889'); 
+    console.log('[Meta Pixel] track: PageView');
     fbq('track', 'PageView');
+    // Send to server for terminal logging (local dev)
+    fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            eventType: 'track',
+            eventName: 'PageView',
+            eventData: {}
+        })
+    }).catch(() => {});
     </script>
     <noscript>
      <img height="1" width="1" 

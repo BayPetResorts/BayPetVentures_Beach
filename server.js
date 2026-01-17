@@ -102,6 +102,18 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.
   }
 }
 
+// API route for Meta Pixel event logging (local development)
+app.post('/api/track', (req, res) => {
+  const { eventType, eventName, eventData } = req.body;
+  const timestamp = new Date().toISOString();
+  console.log(`\n📊 [Meta Pixel Event] ${timestamp}`);
+  console.log(`   Type: ${eventType}`);
+  console.log(`   Event: ${eventName}`);
+  console.log(`   Data:`, JSON.stringify(eventData, null, 2));
+  console.log('');
+  res.json({ success: true });
+});
+
 // API route for contact form submission
 app.post('/api/contact', async (req, res) => {
   try {

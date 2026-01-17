@@ -8,10 +8,23 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Track page view with page name
     if (typeof fbq !== 'undefined') {
-        fbq('trackCustom', 'ViewedRegister', {
+        const eventData = {
             page_name: 'Register',
             test_event_code: 'TEST73273'
-        });
+        };
+        console.log('[Meta Pixel] trackCustom: ViewedRegister', eventData);
+        fbq('trackCustom', 'ViewedRegister', eventData);
+        
+        // Send to server for terminal logging (local dev)
+        fetch('/api/track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                eventType: 'trackCustom',
+                eventName: 'ViewedRegister',
+                eventData: eventData
+            })
+        }).catch(() => {});
     }
     
     // Constants
@@ -247,11 +260,24 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!registrationStarted && typeof fbq !== 'undefined') {
             registrationStarted = true;
             formStartTime = Date.now();
-            fbq('track', 'ViewedRegistration', {
+            const eventData = {
                 content_name: 'Dog Registration',
                 content_category: 'Registration',
                 test_event_code: 'TEST73273'
-            });
+            };
+            console.log('[Meta Pixel] track: ViewedRegistration', eventData);
+            fbq('track', 'ViewedRegistration', eventData);
+            
+            // Send to server for terminal logging (local dev)
+            fetch('/api/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    eventType: 'track',
+                    eventName: 'ViewedRegistration',
+                    eventData: eventData
+                })
+            }).catch(() => {});
         }
     }
     
@@ -267,7 +293,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const timeSpent = formStartTime ? Math.round((now - formStartTime) / 1000) : 0;
             const totalTimeOnPageSeconds = Math.round(totalTimeOnPage / 1000);
             
-            fbq('track', 'CompletedRegistration', {
+            const eventData = {
                 content_name: 'Dog Registration',
                 content_category: 'Registration',
                 value: 199.00,
@@ -278,7 +304,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 dog_name: formData.dogName || '',
                 breed: formData.breed || '',
                 test_event_code: 'TEST73273'
-            });
+            };
+            console.log('[Meta Pixel] track: CompletedRegistration', eventData);
+            fbq('track', 'CompletedRegistration', eventData);
+            
+            // Send to server for terminal logging (local dev)
+            fetch('/api/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    eventType: 'track',
+                    eventName: 'CompletedRegistration',
+                    eventData: eventData
+                })
+            }).catch(() => {});
         }
     }
     
@@ -391,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Send TotalTimeSpent event with breakdown by page
         if (typeof fbq !== 'undefined') {
-            fbq('trackCustom', 'TotalTimeSpent', {
+            const eventData = {
                 page_name: 'Register',
                 total_time_seconds: Math.round(totalTimeOnPage / 1000),
                 time_in_background_seconds: Math.round(timeInBackground / 1000),
@@ -399,7 +438,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 pages_visited: currentSession.pagesVisited.length,
                 page_breakdown: pageBreakdown,
                 test_event_code: 'TEST73273'
-            });
+            };
+            console.log('[Meta Pixel] trackCustom: TotalTimeSpent', eventData);
+            fbq('trackCustom', 'TotalTimeSpent', eventData);
+            
+            // Send to server for terminal logging (local dev)
+            fetch('/api/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    eventType: 'trackCustom',
+                    eventName: 'TotalTimeSpent',
+                    eventData: eventData
+                })
+            }).catch(() => {});
         }
     }
     

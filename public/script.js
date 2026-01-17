@@ -1,19 +1,11 @@
 // Bay Pet Ventures - Homepage Script
-// Prevent multiple executions
-if (window.bpvScriptLoaded) {
-    // Script already loaded, don't execute again
-} else {
-    window.bpvScriptLoaded = true;
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Prevent duplicate execution if DOMContentLoaded fires multiple times
-    if (window.bpvPageViewTracked) {
+    // Prevent duplicate execution - use unique page load identifier
+    const pageLoadId = window.location.pathname + '_' + performance.now();
+    if (window.bpvPageViewTracked === pageLoadId) {
         return;
     }
-    window.bpvPageViewTracked = true;
-    // Session Time Tracking (across all pages)
-    const SESSION_KEY = 'bpv_session';
-    const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 min inactivity = new session
+    window.bpvPageViewTracked = pageLoadId;
     function createNewSession() {
         const now = Date.now();
         return { 
@@ -108,11 +100,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // Automatically includes page_name and test_event_code in all events
     function trackEvent(eventName, data = {}) {
         if (typeof fbq !== 'undefined') {
-            fbq('trackCustom', eventName, { 
+            const eventData = { 
                 ...data, 
                 page_name: pageName, 
                 test_event_code: TEST_EVENT_CODE 
-            });
+            };
+            console.log('[Meta Pixel] trackCustom:', eventName, eventData);
+            fbq('trackCustom', eventName, eventData);
+            
+            // Send to server for terminal logging (local dev)
+            fetch('/api/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    eventType: 'trackCustom',
+                    eventName: eventName,
+                    eventData: eventData
+                })
+            }).catch(() => {}); // Silently fail if server not available
         }
     }
     
@@ -380,4 +385,3 @@ document.addEventListener('DOMContentLoaded', function() {
         animate();
     }
 });
-} // End of bpvScriptLoaded check
