@@ -1,7 +1,7 @@
 {
   "name": "bay-pet-ventures-website",
   "version": "1.0.0",
-  "description": "Bay Pet Ventures - Luxury Pet Care Website",
+  "description": "Bay Pet Ventures - Luxury Pet Vacations Website",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

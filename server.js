@@ -105,7 +105,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.
 // API route for Meta Pixel event logging (development only)
 app.post('/api/meta-event', (req, res) => {
   if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production') {
-    const { event, eventName, eventData, timestamp, pageUrl } = req.body;
+    const { event, eventName, eventData, pageUrl } = req.body;
     
     // Format the log message
     const time = new Date().toLocaleTimeString();

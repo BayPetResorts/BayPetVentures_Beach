@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let totalTimeOnPage = 0;
     let timeInBackground = 0;
     let isPageVisible = true;
+    let isSubmitting = false;
     
     // Breed list
     const BREED_LIST = [
@@ -234,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!registrationStarted && typeof fbq !== 'undefined') {
             registrationStarted = true;
             formStartTime = Date.now();
-            fbq('track', 'InitiateCheckout', {
+            fbq('track', 'StartedForm', {
                 content_name: 'Dog Registration',
                 content_category: 'Registration',
                 test_event_code: 'TEST73273'
@@ -253,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const timeSpent = formStartTime ? Math.round((now - formStartTime) / 1000) : 0;
             const totalTimeOnPageSeconds = Math.round(totalTimeOnPage / 1000);
             
-            fbq('track', 'CompleteRegistration', {
+            fbq('track', 'CompletedRegistration', {
                 content_name: 'Dog Registration',
                 content_category: 'Registration',
                 value: 199.00,
@@ -306,6 +307,13 @@ document.addEventListener('DOMContentLoaded', function() {
     async function submitForm() {
         if (!contactForm) return;
         
+        // Prevent double submission
+        if (isSubmitting) {
+            return;
+        }
+        
+        isSubmitting = true;
+        
         const submitBtn = contactForm.querySelector('.btn-submit');
         const originalBtnText = submitBtn?.textContent || 'Submit';
         
@@ -314,6 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!validateStep(currentStep)) {
             showError('Please complete the current step.');
             resetSubmitButton(submitBtn, originalBtnText);
+            isSubmitting = false;
             return;
         }
         
@@ -330,6 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             showError(firstError.message);
             resetSubmitButton(submitBtn, originalBtnText);
+            isSubmitting = false;
             return;
         }
         
@@ -347,7 +357,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify(formData)
             });
             
-            const data = await response.json();
+            let data = {};
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                // If response is not valid JSON, treat as error unless response is ok
+                if (!response.ok) {
+                    showError('Something went wrong. Please try again.');
+                    resetSubmitButton(submitBtn, originalBtnText);
+                    isSubmitting = false;
+                    return;
+                }
+                // If response.ok but not JSON, assume success (unlikely but handle gracefully)
+                data = { success: true };
+            }
             
             if (response.ok) {
                 // Track successful registration completion
@@ -365,10 +388,12 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 showError(data.error || 'Something went wrong. Please try again.');
                 resetSubmitButton(submitBtn, originalBtnText);
+                isSubmitting = false;
             }
         } catch (error) {
             showError('Network error. Please check your connection and try again.');
             resetSubmitButton(submitBtn, originalBtnText);
+            isSubmitting = false;
         }
     }
     
@@ -498,7 +523,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!isOpen) openDropdown();
         });
         
-        breedSearch.addEventListener('blur', (e) => {
+        breedSearch.addEventListener('blur', () => {
             // Delay to allow click events to fire
             setTimeout(() => {
                 closeDropdown();
@@ -541,8 +566,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 items.forEach(item => item.classList.remove('highlighted'));
-                items[nextIndex].classList.add('highlighted');
-                items[nextIndex].scrollIntoView({ block: 'nearest' });
+                if (items[nextIndex]) {
+                    items[nextIndex].classList.add('highlighted');
+                    items[nextIndex].scrollIntoView({ block: 'nearest' });
+                }
             }
         });
     }

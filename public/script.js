@@ -7,18 +7,31 @@ document.addEventListener('DOMContentLoaded', function() {
     function getSession() {
         const stored = localStorage.getItem(SESSION_KEY);
         if (stored) {
-            const session = JSON.parse(stored);
-            const now = Date.now();
-            // If last activity was more than 30 min ago, start new session
-            if (now - session.lastActivity > SESSION_TIMEOUT) {
-                return { startTime: now, totalTime: 0, lastActivity: now, pagesVisited: [window.location.pathname] };
+            try {
+                const session = JSON.parse(stored);
+                // Validate session structure
+                if (!session || typeof session !== 'object' || !session.lastActivity) {
+                    throw new Error('Invalid session data');
+                }
+                const now = Date.now();
+                // If last activity was more than 30 min ago, start new session
+                if (now - session.lastActivity > SESSION_TIMEOUT) {
+                    return { startTime: now, totalTime: 0, lastActivity: now, pagesVisited: [window.location.pathname] };
+                }
+                // Ensure pagesVisited exists
+                if (!Array.isArray(session.pagesVisited)) {
+                    session.pagesVisited = [window.location.pathname];
+                }
+                // Add current page if not already tracked
+                if (!session.pagesVisited.includes(window.location.pathname)) {
+                    session.pagesVisited.push(window.location.pathname);
+                }
+                session.lastActivity = now;
+                return session;
+            } catch (error) {
+                // If parsing fails, start fresh session
+                return { startTime: Date.now(), totalTime: 0, lastActivity: Date.now(), pagesVisited: [window.location.pathname] };
             }
-            // Add current page if not already tracked
-            if (!session.pagesVisited.includes(window.location.pathname)) {
-                session.pagesVisited.push(window.location.pathname);
-            }
-            session.lastActivity = now;
-            return session;
         }
         return { startTime: Date.now(), totalTime: 0, lastActivity: Date.now(), pagesVisited: [window.location.pathname] };
     }
@@ -62,26 +75,106 @@ document.addEventListener('DOMContentLoaded', function() {
         trackTabSwitch(!document.hidden);
     });
     
-    // Track when user sees the pricing section
-    const pricingSection = document.querySelector('.package-offer-section');
-    if (pricingSection) {
-        const observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting) {
-                if (typeof fbq !== 'undefined') {
-                    fbq('trackCustom', 'ViewedPricing', {
-                        page_name: pageName,
-                        test_event_code: 'TEST73273'
-                    });
+    // Track when user sees "The All-Inclusive Package" section
+    const allInclusiveSection = document.querySelector('.package-offer-section');
+    let timeoutIdAllInclusive = null;
+    let observerAllInclusive = null;
+    let scrollHandlerAllInclusive = null;
+    
+    if (allInclusiveSection) {
+        let allInclusiveTracked = false;
+        let hasUserScrolled = false;
+        let initialScrollY = null;
+        let pageLoadTime = Date.now();
+        let lastKnownScrollY = window.scrollY;
+        
+        // Track scroll events immediately to catch early scrolls
+        scrollHandlerAllInclusive = () => {
+            const timeSinceLoad = Date.now() - pageLoadTime;
+            const currentScrollY = window.scrollY;
+            
+            // After 300ms, start tracking scroll changes
+            if (timeSinceLoad > 300) {
+                // If we haven't captured initial position yet, use last known position
+                if (initialScrollY === null) {
+                    // Mark as scrolled if position changed significantly
+                    if (Math.abs(currentScrollY - lastKnownScrollY) > 10) {
+                        hasUserScrolled = true;
+                    }
+                } else {
+                    // Compare to captured initial position
+                    if (Math.abs(currentScrollY - initialScrollY) > 10) {
+                        hasUserScrolled = true;
+                    }
                 }
-                observer.disconnect(); // Only track once
             }
-        });
-        observer.observe(pricingSection);
+            lastKnownScrollY = currentScrollY;
+        };
+        window.addEventListener('scroll', scrollHandlerAllInclusive, { passive: true });
+        
+        // Wait a bit for page to fully load/restore scroll position
+        timeoutIdAllInclusive = setTimeout(() => {
+            // Check if page is still active
+            if (document.hidden) {
+                return;
+            }
+            
+            initialScrollY = window.scrollY; // Capture after scroll restoration
+            lastKnownScrollY = initialScrollY;
+            
+            // Check if section is already visible after page load
+            const rect = allInclusiveSection.getBoundingClientRect();
+            const isAlreadyVisible = rect.top < window.innerHeight && rect.bottom > 0;
+            
+            // Set up IntersectionObserver to track when section comes into view
+            observerAllInclusive = new IntersectionObserver((entries) => {
+                if (entries.length > 0 && entries[0].isIntersecting && !allInclusiveTracked) {
+                    // Track if:
+                    // 1. User has scrolled (hasUserScrolled is true), OR
+                    // 2. Section was not visible on initial load (user had to scroll to see it)
+                    if (hasUserScrolled || !isAlreadyVisible) {
+                        allInclusiveTracked = true;
+                        if (typeof fbq !== 'undefined') {
+                            fbq('trackCustom', 'ViewedAllInclusivePackage', {
+                                page_name: pageName,
+                                test_event_code: 'TEST73273'
+                            });
+                        }
+                        // Clean up
+                        if (observerAllInclusive) {
+                            observerAllInclusive.disconnect();
+                            observerAllInclusive = null;
+                        }
+                        if (scrollHandlerAllInclusive) {
+                            window.removeEventListener('scroll', scrollHandlerAllInclusive);
+                            scrollHandlerAllInclusive = null;
+                        }
+                    }
+                }
+            }, {
+                threshold: 0.1, // Trigger when 10% of section is visible
+                rootMargin: '0px'
+            });
+            observerAllInclusive.observe(allInclusiveSection);
+        }, 500); // Small delay to account for scroll restoration
     }
     
-    // Track time on page when leaving
+    // Track time on page when leaving and clean up
     window.addEventListener('beforeunload', () => {
         const now = Date.now();
+        
+        // Clean up allInclusiveSection tracking
+        if (timeoutIdAllInclusive) {
+            clearTimeout(timeoutIdAllInclusive);
+        }
+        if (observerAllInclusive) {
+            observerAllInclusive.disconnect();
+        }
+        if (scrollHandlerAllInclusive) {
+            window.removeEventListener('scroll', scrollHandlerAllInclusive);
+        }
+        
+        // Track time spent on page
         if (isPageVisible) {
             totalTimeOnPage += now - tabStartTime;
         }

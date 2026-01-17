@@ -1,6 +1,6 @@
 # Bay Pet Ventures Website
 
-A modern, responsive website for Bay Pet Ventures, featuring luxury pet care services. Built with Node.js and Express.
+A modern, responsive website for Bay Pet Ventures, featuring Luxury Pet Vacations services. Built with Node.js and Express.
 
 ## Features
 
