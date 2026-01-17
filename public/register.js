@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!registrationStarted && typeof fbq !== 'undefined') {
             registrationStarted = true;
             formStartTime = Date.now();
-            fbq('track', 'InitiateCheckout', {
+            fbq('track', 'ViewRegistrationForm', {
                 content_name: 'Dog Registration',
                 content_category: 'Registration',
                 test_event_code: 'TEST73273'
@@ -389,8 +389,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.btn-next').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            // Track registration start when user first interacts with form
-            trackRegistrationStart();
             if (validateStep(currentStep) && currentStep < TOTAL_STEPS) {
                 currentStep++;
                 showStep(currentStep);
@@ -419,11 +417,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Phone number auto-formatting
     const phoneInput = getElement('phone');
     if (phoneInput) {
-        // Track registration start when user first types in phone field
-        phoneInput.addEventListener('focus', () => {
-            trackRegistrationStart();
-        });
-        
         phoneInput.addEventListener('input', (e) => {
             const cursorPosition = e.target.selectionStart;
             const oldValue = e.target.value;
@@ -688,6 +681,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 100);
         }
     }
+    
+    // Track ViewRegistrationForm when page loads
+    trackRegistrationStart();
     
     // Scroll on page load
     scrollToForm();

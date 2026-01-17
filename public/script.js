@@ -27,15 +27,29 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     }
     
-    const session = getSession();
-    saveSession(session);
+    // Initialize session
+    saveSession(getSession());
     
-    // Page Time Tracking for Meta Pixel
+    // Page Time Tracking for Meta Pixel (per-page only)
     let tabStartTime = Date.now();
-    let totalTimeOnPage = 0;
-    let timeInBackground = 0;
+    let totalTimeOnPage = 0; // Time on THIS page only
+    let timeInBackground = 0; // Background time on THIS page only
     let isPageVisible = true;
-    const pageName = document.title || window.location.pathname;
+    let finalEventSent = false; // Prevent duplicate final events
+    
+    // Get clean page identifier
+    function getPageIdentifier() {
+        const path = window.location.pathname.toLowerCase();
+        if (path === '/' || path.includes('index.html')) return 'Homepage';
+        if (path.includes('meet-the-owners')) return 'Meet the Owners';
+        if (path.includes('services')) return 'Trip Info';
+        if (path.includes('faq')) return 'FAQ';
+        if (path.includes('register')) return 'Register';
+        if (path.includes('contact')) return 'Contact Us';
+        return document.title || path;
+    }
+    
+    const pageName = getPageIdentifier();
     
     // Track tab visibility changes
     function trackTabSwitch(isVisible) {
@@ -47,6 +61,13 @@ document.addEventListener('DOMContentLoaded', function() {
             totalTimeOnPage += timeBeforeSwitch;
             tabStartTime = now;
             isPageVisible = false;
+            
+            // Update session with time spent before switching away
+            const currentSession = getSession();
+            currentSession.totalTime += timeBeforeSwitch;
+            currentSession.lastActivity = now;
+            saveSession(currentSession);
+            
             if (typeof fbq !== 'undefined') {
                 fbq('trackCustom', 'TabSwitchedAway', {
                     page_name: pageName,
@@ -71,10 +92,76 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Function to send PageTimeSpent event (reusable for periodic and final tracking)
+    function sendPageTimeSpent(isFinal = false) {
+        // Prevent duplicate final events
+        if (isFinal && finalEventSent) {
+            return;
+        }
+        
+        const now = Date.now();
+        let timeIncrement = 0;
+        
+        if (isPageVisible) {
+            timeIncrement = now - tabStartTime;
+            totalTimeOnPage += timeIncrement;
+            // Reset tabStartTime for next calculation (only if not final)
+            if (!isFinal) {
+                tabStartTime = now;
+            }
+        }
+        
+        if (isFinal) {
+            finalEventSent = true;
+        }
+        
+        // Update session with time spent on this page
+        const currentSession = getSession();
+        // Only add the incremental time, not the full total
+        currentSession.totalTime += timeIncrement;
+        currentSession.lastActivity = now;
+        saveSession(currentSession);
+        
+        const totalSessionTime = Math.round(currentSession.totalTime / 1000); // Total active time across all pages
+        const eventData = {
+            page_name: pageName,
+            total_time_seconds: Math.round(totalTimeOnPage / 1000), // Time on THIS page only (resets per page)
+            time_in_background_seconds: Math.round(timeInBackground / 1000), // Background time on THIS page only
+            session_time_seconds: totalSessionTime, // Total active time across all pages in session
+            pages_visited: currentSession.pagesVisited.length,
+            test_event_code: 'TEST73273',
+            is_final: isFinal
+        };
+        
+        if (typeof fbq !== 'undefined') {
+            fbq('trackCustom', 'PageTimeSpent', eventData);
+        }
+    }
+    
+    // Periodic heartbeat tracking (every 30 seconds while page is visible)
+    let heartbeatInterval = null;
+    function startHeartbeat() {
+        if (heartbeatInterval) clearInterval(heartbeatInterval);
+        heartbeatInterval = setInterval(() => {
+            if (isPageVisible) {
+                sendPageTimeSpent(false);
+            }
+        }, 30000); // Every 30 seconds
+    }
+    
     // Initialize tab tracking
     // Use visibilitychange as primary method (more reliable than blur/focus)
     document.addEventListener('visibilitychange', () => {
         trackTabSwitch(!document.hidden);
+        // Also manage heartbeat when visibility changes
+        if (!document.hidden) {
+            startHeartbeat();
+        } else {
+            if (heartbeatInterval) {
+                clearInterval(heartbeatInterval);
+                heartbeatInterval = null;
+            }
+        }
     });
     
     // Track when user sees the pricing section
@@ -94,31 +181,17 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(pricingSection);
     }
     
-    // Track time on page when leaving
+    // Start heartbeat tracking
+    startHeartbeat();
+    
+    // Track time on page when leaving (final event)
     window.addEventListener('beforeunload', () => {
-        const now = Date.now();
-        if (isPageVisible) {
-            totalTimeOnPage += now - tabStartTime;
-        }
-        
-        // Update session with time spent on this page
-        const currentSession = getSession();
-        currentSession.totalTime += totalTimeOnPage;
-        currentSession.lastActivity = now;
-        saveSession(currentSession);
-        
-        const totalSessionTime = Math.round((now - currentSession.startTime) / 1000);
-        
-        if (typeof fbq !== 'undefined') {
-            fbq('trackCustom', 'PageTimeSpent', {
-                page_name: pageName,
-                total_time_seconds: Math.round(totalTimeOnPage / 1000),
-                time_in_background_seconds: Math.round(timeInBackground / 1000),
-                session_time_seconds: totalSessionTime,
-                pages_visited: currentSession.pagesVisited.length,
-                test_event_code: 'TEST73273'
-            });
-        }
+        sendPageTimeSpent(true);
+    });
+    
+    // Also track on pagehide (more reliable than beforeunload in some browsers)
+    window.addEventListener('pagehide', () => {
+        sendPageTimeSpent(true);
     });
     
     // Discount Banner Functionality
