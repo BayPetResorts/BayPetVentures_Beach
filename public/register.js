@@ -1,5 +1,13 @@
 // Bay Pet Ventures - Registration Form Handler
 document.addEventListener('DOMContentLoaded', function() {
+    // Track page view with page name
+    if (typeof fbq !== 'undefined') {
+        fbq('trackCustom', 'PageViewed', {
+            page_name: 'Register',
+            test_event_code: 'TEST73273'
+        });
+    }
+    
     // Constants
     const TOTAL_STEPS = 3;
     const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

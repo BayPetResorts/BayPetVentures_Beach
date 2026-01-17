@@ -50,6 +50,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     const pageName = getPageIdentifier();
+    const TEST_EVENT_CODE = 'TEST73273';
+    
+    // Helper function to track Meta Pixel events
+    // Automatically includes page_name and test_event_code in all events
+    function trackEvent(eventName, data = {}) {
+        if (typeof fbq !== 'undefined') {
+            fbq('trackCustom', eventName, { 
+                ...data, 
+                page_name: pageName, 
+                test_event_code: TEST_EVENT_CODE 
+            });
+        }
+    }
+    
+    // Track page view with page name
+    trackEvent('PageViewed');
     
     // Track tab visibility changes
     function trackTabSwitch(isVisible) {
@@ -68,27 +84,19 @@ document.addEventListener('DOMContentLoaded', function() {
             currentSession.lastActivity = now;
             saveSession(currentSession);
             
-            if (typeof fbq !== 'undefined') {
-                fbq('trackCustom', 'TabSwitchedAway', {
-                    page_name: pageName,
-                    time_on_page: Math.round(totalTimeOnPage / 1000),
-                    test_event_code: 'TEST73273'
-                });
-            }
+            trackEvent('TabSwitchedAway', {
+                time_on_page: Math.round(totalTimeOnPage / 1000)
+            });
         } else if (!isPageVisible && isVisible) {
             // Tab switched back
             const timeInBackgroundThisSession = now - tabStartTime;
             timeInBackground += timeInBackgroundThisSession;
             isPageVisible = true;
             tabStartTime = now;
-            if (typeof fbq !== 'undefined') {
-                fbq('trackCustom', 'TabSwitchedBack', {
-                    page_name: pageName,
-                    time_in_background: Math.round(timeInBackgroundThisSession / 1000),
-                    total_time_in_background: Math.round(timeInBackground / 1000),
-                    test_event_code: 'TEST73273'
-                });
-            }
+            trackEvent('TabSwitchedBack', {
+                time_in_background: Math.round(timeInBackgroundThisSession / 1000),
+                total_time_in_background: Math.round(timeInBackground / 1000)
+            });
         }
     }
     
@@ -117,25 +125,18 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update session with time spent on this page
         const currentSession = getSession();
-        // Only add the incremental time, not the full total
+        // Add only the incremental time since last calculation (prevents double-counting)
         currentSession.totalTime += timeIncrement;
         currentSession.lastActivity = now;
         saveSession(currentSession);
         
-        const totalSessionTime = Math.round(currentSession.totalTime / 1000); // Total active time across all pages
-        const eventData = {
-            page_name: pageName,
-            total_time_seconds: Math.round(totalTimeOnPage / 1000), // Time on THIS page only (resets per page)
-            time_in_background_seconds: Math.round(timeInBackground / 1000), // Background time on THIS page only
-            session_time_seconds: totalSessionTime, // Total active time across all pages in session
+        trackEvent('PageTimeSpent', {
+            total_time_seconds: Math.round(totalTimeOnPage / 1000),
+            time_in_background_seconds: Math.round(timeInBackground / 1000),
+            session_time_seconds: Math.round(currentSession.totalTime / 1000),
             pages_visited: currentSession.pagesVisited.length,
-            test_event_code: 'TEST73273',
             is_final: isFinal
-        };
-        
-        if (typeof fbq !== 'undefined') {
-            fbq('trackCustom', 'PageTimeSpent', eventData);
-        }
+        });
     }
     
     // Periodic heartbeat tracking (every 30 seconds while page is visible)
@@ -153,14 +154,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Use visibilitychange as primary method (more reliable than blur/focus)
     document.addEventListener('visibilitychange', () => {
         trackTabSwitch(!document.hidden);
-        // Also manage heartbeat when visibility changes
-        if (!document.hidden) {
-            startHeartbeat();
-        } else {
+        // Manage heartbeat when visibility changes
+        if (document.hidden) {
             if (heartbeatInterval) {
                 clearInterval(heartbeatInterval);
                 heartbeatInterval = null;
             }
+        } else {
+            startHeartbeat();
         }
     });
     
@@ -169,13 +170,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (pricingSection) {
         const observer = new IntersectionObserver((entries) => {
             if (entries[0].isIntersecting) {
-                if (typeof fbq !== 'undefined') {
-                    fbq('trackCustom', 'ViewedPricing', {
-                        page_name: pageName,
-                        test_event_code: 'TEST73273'
-                    });
-                }
-                observer.disconnect(); // Only track once
+                trackEvent('ViewedPricing');
+                observer.disconnect();
             }
         });
         observer.observe(pricingSection);
@@ -201,26 +197,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (discountBanner && currentMonthElement) {
         // Get current month name
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                          'July', 'August', 'September', 'October', 'November', 'December'];
         const currentDate = new Date();
-        const currentMonthName = monthNames[currentDate.getMonth()];
+        const currentMonthName = currentDate.toLocaleString('default', { month: 'long' });
         currentMonthElement.textContent = currentMonthName;
         
-        // Check if banner was previously closed (using localStorage with month key)
-        const bannerKey = `discountBannerClosed_${currentMonthName}_${currentDate.getFullYear()}`;
-        const isBannerClosed = localStorage.getItem(bannerKey) === 'true';
+        // Always show banner on page load
+        discountBanner.classList.remove('hidden');
         
-        if (isBannerClosed) {
-            discountBanner.classList.add('hidden');
-        }
-        
-        // Close banner functionality
+        // Close banner functionality (hides for current session only)
         if (discountBannerClose) {
             discountBannerClose.addEventListener('click', function() {
                 discountBanner.classList.add('hidden');
-                // Store closed state for this month/year
-                localStorage.setItem(bannerKey, 'true');
             });
         }
     }
@@ -246,19 +233,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Function to attempt video playback
         const attemptPlay = () => {
-            const playPromise = heroVideo.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(() => {
-                    // Autoplay was prevented, try again after user interaction
-                    const playOnInteraction = () => {
-                        heroVideo.play().catch(() => {});
-                        document.removeEventListener('touchstart', playOnInteraction);
-                        document.removeEventListener('click', playOnInteraction);
-                    };
-                    document.addEventListener('touchstart', playOnInteraction, { once: true });
-                    document.addEventListener('click', playOnInteraction, { once: true });
-                });
-            }
+            heroVideo.play().catch(() => {
+                // Autoplay was prevented, try again after user interaction
+                const playOnInteraction = () => {
+                    heroVideo.play().catch(() => {});
+                };
+                document.addEventListener('touchstart', playOnInteraction, { once: true });
+                document.addEventListener('click', playOnInteraction, { once: true });
+            });
         };
         
         // Try to play immediately
@@ -345,26 +327,23 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Pause on touch (mobile)
         let touchTimeout = null;
+        const clearTouchTimeout = () => {
+            if (touchTimeout) clearTimeout(touchTimeout);
+        };
         
         testimonialsContainer.addEventListener('touchstart', () => {
             isPaused = true;
-            if (touchTimeout) {
-                clearTimeout(touchTimeout);
-            }
-        });
-        
-        testimonialsContainer.addEventListener('touchend', () => {
-            // Small delay before resuming to allow for scroll gestures
-            touchTimeout = setTimeout(() => {
-                isPaused = false;
-            }, 500);
+            clearTouchTimeout();
         });
         
         testimonialsContainer.addEventListener('touchmove', () => {
             isPaused = true;
-            if (touchTimeout) {
-                clearTimeout(touchTimeout);
-            }
+            clearTouchTimeout();
+        });
+        
+        testimonialsContainer.addEventListener('touchend', () => {
+            clearTouchTimeout();
+            touchTimeout = setTimeout(() => { isPaused = false; }, 500);
         });
         
         // Auto-scroll animation
