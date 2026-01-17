@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Track page view with page name
     if (typeof fbq !== 'undefined') {
-        fbq('trackCustom', 'PageViewed', {
+        fbq('trackCustom', 'SpecificPageViewed', {
             page_name: 'Register',
             test_event_code: 'TEST73273'
         });
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!registrationStarted && typeof fbq !== 'undefined') {
             registrationStarted = true;
             formStartTime = Date.now();
-            fbq('track', 'ViewRegistrationForm', {
+            fbq('track', 'ViewedRegistration', {
                 content_name: 'Dog Registration',
                 content_category: 'Registration',
                 test_event_code: 'TEST73273'
@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const timeSpent = formStartTime ? Math.round((now - formStartTime) / 1000) : 0;
             const totalTimeOnPageSeconds = Math.round(totalTimeOnPage / 1000);
             
-            fbq('track', 'CompleteRegistration', {
+            fbq('track', 'CompletedRegistration', {
                 content_name: 'Dog Registration',
                 content_category: 'Registration',
                 value: 199.00,
@@ -690,7 +690,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Track ViewRegistrationForm when page loads
+    // Track ViewedRegistration when page loads
     trackRegistrationStart();
     
     // Scroll on page load

@@ -52,6 +52,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const pageName = getPageIdentifier();
     const TEST_EVENT_CODE = 'TEST73273';
     
+    // Convert page name to event name (e.g., "Homepage" -> "HomePageTotalTimeSpent")
+    function getPageTimeEventName() {
+        const eventNameMap = {
+            'Homepage': 'HomePageTotalTimeSpent',
+            'Meet the Owners': 'MeetTheOwnersTotalTimeSpent',
+            'Trip Info': 'TripInfoTotalTimeSpent',
+            'FAQ': 'FAQTotalTimeSpent',
+            'Register': 'RegisterTotalTimeSpent',
+            'Contact Us': 'ContactUsTotalTimeSpent'
+        };
+        return eventNameMap[pageName] || `${pageName.replace(/\s+/g, '')}TotalTimeSpent`;
+    }
+    
     // Helper function to track Meta Pixel events
     // Automatically includes page_name and test_event_code in all events
     function trackEvent(eventName, data = {}) {
@@ -65,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Track page view with page name
-    trackEvent('PageViewed');
+    trackEvent('SpecificPageViewed');
     
     // Track tab visibility changes
     function trackTabSwitch(isVisible) {
@@ -100,10 +113,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Function to send PageTimeSpent event (reusable for periodic and final tracking)
-    function sendPageTimeSpent(isFinal = false) {
-        // Prevent duplicate final events
-        if (isFinal && finalEventSent) {
+    // Function to send page-specific time spent event (fires once on page exit)
+    function sendPageTimeSpent() {
+        // Prevent duplicate events
+        if (finalEventSent) {
             return;
         }
         
@@ -113,15 +126,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isPageVisible) {
             timeIncrement = now - tabStartTime;
             totalTimeOnPage += timeIncrement;
-            // Reset tabStartTime for next calculation (only if not final)
-            if (!isFinal) {
-                tabStartTime = now;
-            }
         }
         
-        if (isFinal) {
-            finalEventSent = true;
-        }
+        finalEventSent = true;
         
         // Update session with time spent on this page
         const currentSession = getSession();
@@ -130,39 +137,21 @@ document.addEventListener('DOMContentLoaded', function() {
         currentSession.lastActivity = now;
         saveSession(currentSession);
         
-        trackEvent('PageTimeSpent', {
+        // Get page-specific event name (e.g., "HomePageTotalTimeSpent", "ContactUsTotalTimeSpent")
+        const pageTimeEventName = getPageTimeEventName();
+        
+        trackEvent(pageTimeEventName, {
             total_time_seconds: Math.round(totalTimeOnPage / 1000),
             time_in_background_seconds: Math.round(timeInBackground / 1000),
             session_time_seconds: Math.round(currentSession.totalTime / 1000),
-            pages_visited: currentSession.pagesVisited.length,
-            is_final: isFinal
+            pages_visited: currentSession.pagesVisited.length
         });
-    }
-    
-    // Periodic heartbeat tracking (every 30 seconds while page is visible)
-    let heartbeatInterval = null;
-    function startHeartbeat() {
-        if (heartbeatInterval) clearInterval(heartbeatInterval);
-        heartbeatInterval = setInterval(() => {
-            if (isPageVisible) {
-                sendPageTimeSpent(false);
-            }
-        }, 30000); // Every 30 seconds
     }
     
     // Initialize tab tracking
     // Use visibilitychange as primary method (more reliable than blur/focus)
     document.addEventListener('visibilitychange', () => {
         trackTabSwitch(!document.hidden);
-        // Manage heartbeat when visibility changes
-        if (document.hidden) {
-            if (heartbeatInterval) {
-                clearInterval(heartbeatInterval);
-                heartbeatInterval = null;
-            }
-        } else {
-            startHeartbeat();
-        }
     });
     
     // Track when user sees the pricing section
@@ -177,17 +166,14 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(pricingSection);
     }
     
-    // Start heartbeat tracking
-    startHeartbeat();
-    
-    // Track time on page when leaving (final event)
+    // Track time on page when leaving (fires once per page visit)
     window.addEventListener('beforeunload', () => {
-        sendPageTimeSpent(true);
+        sendPageTimeSpent();
     });
     
     // Also track on pagehide (more reliable than beforeunload in some browsers)
     window.addEventListener('pagehide', () => {
-        sendPageTimeSpent(true);
+        sendPageTimeSpent();
     });
     
     // Discount Banner Functionality
