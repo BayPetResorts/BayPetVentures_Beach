@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const https = require('https');
 const { google } = require('googleapis');
 const { formatInTimeZone } = require('date-fns-tz');
 
@@ -102,10 +103,74 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.
   }
 }
 
+// reCAPTCHA verification function
+async function verifyRecaptcha(token) {
+  return new Promise((resolve, reject) => {
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    
+    // If reCAPTCHA is not configured, skip verification
+    if (!secretKey) {
+      console.log('⚠️  reCAPTCHA secret key not configured. Skipping verification.');
+      resolve(true);
+      return;
+    }
+    
+    if (!token) {
+      resolve(false);
+      return;
+    }
+    
+    const postData = `secret=${encodeURIComponent(secretKey)}&response=${encodeURIComponent(token)}`;
+    
+    const options = {
+      hostname: 'www.google.com',
+      port: 443,
+      path: '/recaptcha/api/siteverify',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    };
+    
+    const req = https.request(options, (res) => {
+      let data = '';
+      
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      
+      res.on('end', () => {
+        try {
+          const result = JSON.parse(data);
+          resolve(result.success === true);
+        } catch (error) {
+          console.error('Error parsing reCAPTCHA response:', error);
+          resolve(false);
+        }
+      });
+    });
+    
+    req.on('error', (error) => {
+      console.error('Error verifying reCAPTCHA:', error);
+      resolve(false);
+    });
+    
+    req.write(postData);
+    req.end();
+  });
+}
+
 // API route for contact form submission
 app.post('/api/contact', async (req, res) => {
   try {
-    const { phone, firstName, lastName, email, dogName, breed, notes } = req.body;
+    const { phone, firstName, lastName, email, dogName, breed, notes, recaptchaToken } = req.body;
+    
+    // Verify reCAPTCHA
+    const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+    if (!isRecaptchaValid) {
+      return res.status(400).json({ error: 'CAPTCHA verification failed. Please try again.' });
+    }
 
     // Validate required fields
     if (!phone || !firstName || !lastName || !email || !dogName || !breed) {

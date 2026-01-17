@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Track page view with page name
     if (typeof fbq !== 'undefined') {
-        fbq('trackCustom', 'SpecificPageViewed', {
+        fbq('trackCustom', 'ViewedRegister', {
             page_name: 'Register',
             test_event_code: 'TEST73273'
         });
@@ -323,6 +323,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // CAPTCHA Functions
+    function getRecaptchaResponse() {
+        return new Promise((resolve) => {
+            if (typeof grecaptcha === 'undefined') {
+                resolve(null);
+                return;
+            }
+            const response = grecaptcha.getResponse();
+            resolve(response || null);
+        });
+    }
+    
+    function resetRecaptcha() {
+        if (typeof grecaptcha !== 'undefined') {
+            grecaptcha.reset();
+        }
+    }
+    
+    function showRecaptchaError(show) {
+        const errorEl = document.getElementById('recaptcha-error');
+        if (errorEl) {
+            errorEl.style.display = show ? 'block' : 'none';
+        }
+    }
+    
     // Form Submission
     async function submitForm() {
         if (!contactForm) return;
@@ -331,6 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const originalBtnText = submitBtn?.textContent || 'Submit';
         
         clearErrors();
+        showRecaptchaError(false);
         
         if (!validateStep(currentStep)) {
             showError('Please complete the current step.');
@@ -354,6 +380,15 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Verify CAPTCHA
+        const recaptchaResponse = await getRecaptchaResponse();
+        if (!recaptchaResponse) {
+            showRecaptchaError(true);
+            showError('Please complete the CAPTCHA verification.');
+            resetSubmitButton(submitBtn, originalBtnText);
+            return;
+        }
+        
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.textContent = 'Submitting...';
@@ -361,6 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             const formData = collectFormData();
+            formData.recaptchaToken = recaptchaResponse;
             
             const response = await fetch('/api/contact', {
                 method: 'POST',
@@ -384,10 +420,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }, 0);
             } else {
+                // Reset CAPTCHA on error
+                resetRecaptcha();
                 showError(data.error || 'Something went wrong. Please try again.');
                 resetSubmitButton(submitBtn, originalBtnText);
             }
         } catch (error) {
+            // Reset CAPTCHA on error
+            resetRecaptcha();
             showError('Network error. Please check your connection and try again.');
             resetSubmitButton(submitBtn, originalBtnText);
         }

@@ -4,6 +4,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const SESSION_KEY = 'bpv_session';
     const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 min inactivity = new session
     
+    function createNewSession() {
+        const now = Date.now();
+        return { 
+            startTime: now, 
+            totalTime: 0, 
+            lastActivity: now, 
+            pagesVisited: [window.location.pathname],
+            pageTimes: {}
+        };
+    }
+    
     function getSession() {
         const stored = localStorage.getItem(SESSION_KEY);
         if (stored) {
@@ -11,16 +22,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const now = Date.now();
             // If last activity was more than 30 min ago, start new session
             if (now - session.lastActivity > SESSION_TIMEOUT) {
-                return { startTime: now, totalTime: 0, lastActivity: now, pagesVisited: [window.location.pathname] };
+                return createNewSession();
             }
             // Add current page if not already tracked
             if (!session.pagesVisited.includes(window.location.pathname)) {
                 session.pagesVisited.push(window.location.pathname);
             }
+            // Initialize pageTimes if it doesn't exist (for old sessions)
+            if (!session.pageTimes) {
+                session.pageTimes = {};
+            }
             session.lastActivity = now;
             return session;
         }
-        return { startTime: Date.now(), totalTime: 0, lastActivity: Date.now(), pagesVisited: [window.location.pathname] };
+        return createNewSession();
     }
     
     function saveSession(session) {
@@ -52,17 +67,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const pageName = getPageIdentifier();
     const TEST_EVENT_CODE = 'TEST73273';
     
-    // Convert page name to event name (e.g., "Homepage" -> "HomePageTotalTimeSpent")
-    function getPageTimeEventName() {
+    // Convert page name to event name (e.g., "Homepage" -> "ViewedHomepage")
+    function getViewedEventName() {
         const eventNameMap = {
-            'Homepage': 'HomePageTotalTimeSpent',
-            'Meet the Owners': 'MeetTheOwnersTotalTimeSpent',
-            'Trip Info': 'TripInfoTotalTimeSpent',
-            'FAQ': 'FAQTotalTimeSpent',
-            'Register': 'RegisterTotalTimeSpent',
-            'Contact Us': 'ContactUsTotalTimeSpent'
+            'Homepage': 'ViewedHomepage',
+            'Meet the Owners': 'ViewedMeetTheOwners',
+            'Trip Info': 'ViewedTripInfo',
+            'FAQ': 'ViewedFAQ',
+            'Register': 'ViewedRegister',
+            'Contact Us': 'ViewedContactUs'
         };
-        return eventNameMap[pageName] || `${pageName.replace(/\s+/g, '')}TotalTimeSpent`;
+        return eventNameMap[pageName] || `Viewed${pageName.replace(/\s+/g, '')}`;
     }
     
     // Helper function to track Meta Pixel events
@@ -77,8 +92,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Track page view with page name
-    trackEvent('SpecificPageViewed');
+    // Track page view with page name (e.g., "ViewedHomepage", "ViewedContactUs")
+    trackEvent(getViewedEventName());
     
     // Track tab visibility changes
     function trackTabSwitch(isVisible) {
@@ -113,8 +128,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Function to send page-specific time spent event (fires once on page exit)
-    function sendPageTimeSpent() {
+    // Function to send TotalTimeSpent event with breakdown by page (fires once on page exit)
+    function sendTotalTimeSpent() {
         // Prevent duplicate events
         if (finalEventSent) {
             return;
@@ -134,17 +149,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const currentSession = getSession();
         // Add only the incremental time since last calculation (prevents double-counting)
         currentSession.totalTime += timeIncrement;
+        
+        // Track time for this specific page (accumulate if user visits same page multiple times)
+        currentSession.pageTimes[pageName] = (currentSession.pageTimes[pageName] || 0) + totalTimeOnPage;
         currentSession.lastActivity = now;
         saveSession(currentSession);
         
-        // Get page-specific event name (e.g., "HomePageTotalTimeSpent", "ContactUsTotalTimeSpent")
-        const pageTimeEventName = getPageTimeEventName();
+        // Convert pageTimes to seconds for breakdown
+        const pageBreakdown = Object.fromEntries(
+            Object.entries(currentSession.pageTimes).map(([page, ms]) => [page, Math.round(ms / 1000)])
+        );
         
-        trackEvent(pageTimeEventName, {
-            total_time_seconds: Math.round(totalTimeOnPage / 1000),
+        // Send TotalTimeSpent event with breakdown by page
+        trackEvent('TotalTimeSpent', {
+            total_time_seconds: Math.round(totalTimeOnPage / 1000), // Time on current page
             time_in_background_seconds: Math.round(timeInBackground / 1000),
-            session_time_seconds: Math.round(currentSession.totalTime / 1000),
-            pages_visited: currentSession.pagesVisited.length
+            session_time_seconds: Math.round(currentSession.totalTime / 1000), // Aggregate time
+            pages_visited: currentSession.pagesVisited.length,
+            page_breakdown: pageBreakdown // Breakdown by page: { "Homepage": 30, "Contact Us": 45 }
         });
     }
     
@@ -168,12 +190,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Track time on page when leaving (fires once per page visit)
     window.addEventListener('beforeunload', () => {
-        sendPageTimeSpent();
+        sendTotalTimeSpent();
     });
     
     // Also track on pagehide (more reliable than beforeunload in some browsers)
     window.addEventListener('pagehide', () => {
-        sendPageTimeSpent();
+        sendTotalTimeSpent();
     });
     
     // Discount Banner Functionality
