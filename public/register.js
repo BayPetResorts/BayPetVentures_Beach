@@ -1,32 +1,5 @@
 // Bay Pet Ventures - Registration Form Handler
 document.addEventListener('DOMContentLoaded', function() {
-    // Prevent duplicate execution if DOMContentLoaded fires multiple times
-    if (window.bpvRegisterPageViewTracked) {
-        return;
-    }
-    window.bpvRegisterPageViewTracked = true;
-    
-    // Track page view with page name
-    if (typeof fbq !== 'undefined') {
-        const eventData = {
-            page_name: 'Register',
-            test_event_code: 'TEST73273'
-        };
-        console.log('[Meta Pixel] trackCustom: ViewedRegister', eventData);
-        fbq('trackCustom', 'ViewedRegister', eventData);
-        
-        // Send to server for terminal logging (local dev)
-        fetch('/api/track', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                eventType: 'trackCustom',
-                eventName: 'ViewedRegister',
-                eventData: eventData
-            })
-        }).catch(() => {});
-    }
-    
     // Constants
     const TOTAL_STEPS = 3;
     const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -108,7 +81,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return el ? el.value.trim() : '';
     }
     
-    function showError(message) {
+    function showError(message, element = null) {
+        if (element) element.classList.add('error');
         if (formMessage) {
             formMessage.textContent = message;
             formMessage.className = 'form-message error';
@@ -260,24 +234,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!registrationStarted && typeof fbq !== 'undefined') {
             registrationStarted = true;
             formStartTime = Date.now();
-            const eventData = {
+            fbq('track', 'InitiateCheckout', {
                 content_name: 'Dog Registration',
                 content_category: 'Registration',
                 test_event_code: 'TEST73273'
-            };
-            console.log('[Meta Pixel] track: ViewedRegistration', eventData);
-            fbq('track', 'ViewedRegistration', eventData);
-            
-            // Send to server for terminal logging (local dev)
-            fetch('/api/track', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    eventType: 'track',
-                    eventName: 'ViewedRegistration',
-                    eventData: eventData
-                })
-            }).catch(() => {});
+            });
         }
     }
     
@@ -286,14 +247,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const now = Date.now();
         if (isPageVisible) {
             totalTimeOnPage += now - tabStartTime;
-            tabStartTime = now; // Reset to prevent double-counting in sendTotalTimeSpent
         }
         
         if (typeof fbq !== 'undefined' && formData) {
             const timeSpent = formStartTime ? Math.round((now - formStartTime) / 1000) : 0;
             const totalTimeOnPageSeconds = Math.round(totalTimeOnPage / 1000);
             
-            const eventData = {
+            fbq('track', 'CompleteRegistration', {
                 content_name: 'Dog Registration',
                 content_category: 'Registration',
                 value: 199.00,
@@ -304,166 +264,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 dog_name: formData.dogName || '',
                 breed: formData.breed || '',
                 test_event_code: 'TEST73273'
-            };
-            console.log('[Meta Pixel] track: CompletedRegistration', eventData);
-            fbq('track', 'CompletedRegistration', eventData);
-            
-            // Send to server for terminal logging (local dev)
-            fetch('/api/track', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    eventType: 'track',
-                    eventName: 'CompletedRegistration',
-                    eventData: eventData
-                })
-            }).catch(() => {});
+            });
         }
     }
     
-    // Track visibility changes for accurate time calculation
-    function handleVisibilityChange(isVisible) {
+    function trackTabSwitch(isVisible) {
         const now = Date.now();
         
         if (isPageVisible && !isVisible) {
-            // Tab switched away - accumulate time and pause tracking
-            totalTimeOnPage += now - tabStartTime;
+            // Tab switched away - record time spent on page before switching
+            const timeBeforeSwitch = now - tabStartTime;
+            totalTimeOnPage += timeBeforeSwitch;
             tabStartTime = now;
             isPageVisible = false;
+            if (typeof fbq !== 'undefined') {
+                fbq('trackCustom', 'TabSwitchedAway', {
+                    time_on_page: Math.round(totalTimeOnPage / 1000),
+                    test_event_code: 'TEST73273'
+                });
+            }
         } else if (!isPageVisible && isVisible) {
-            // Tab switched back - track background time and resume
-            timeInBackground += now - tabStartTime;
-            tabStartTime = now;
+            // Tab switched back - record time spent in background
+            const timeInBackgroundThisSession = now - tabStartTime;
+            timeInBackground += timeInBackgroundThisSession;
             isPageVisible = true;
-        }
-    }
-    
-    // Initialize visibility tracking
-    document.addEventListener('visibilitychange', () => {
-        handleVisibilityChange(!document.hidden);
-    });
-    
-    // Session tracking (shared with script.js)
-    const SESSION_KEY = 'bpv_session';
-    const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 min inactivity = new session
-    
-    function createNewSession() {
-        const now = Date.now();
-        return { 
-            totalTime: 0, 
-            lastActivity: now, 
-            pagesVisited: [window.location.pathname],
-            pageTimes: {}
-        };
-    }
-    
-    function getSession() {
-        const stored = localStorage.getItem(SESSION_KEY);
-        if (stored) {
-            try {
-                const session = JSON.parse(stored);
-                const now = Date.now();
-                // Validate session structure
-                if (!session || typeof session !== 'object' || !session.lastActivity) {
-                    return createNewSession();
-                }
-                if (now - session.lastActivity > SESSION_TIMEOUT) {
-                    return createNewSession();
-                }
-                // Initialize missing properties
-                if (!session.pagesVisited || !Array.isArray(session.pagesVisited)) {
-                    session.pagesVisited = [window.location.pathname];
-                }
-                if (!session.pageTimes || typeof session.pageTimes !== 'object') {
-                    session.pageTimes = {};
-                }
-                if (typeof session.totalTime !== 'number') {
-                    session.totalTime = 0;
-                }
-                if (!session.pagesVisited.includes(window.location.pathname)) {
-                    session.pagesVisited.push(window.location.pathname);
-                }
-                session.lastActivity = now;
-                return session;
-            } catch (e) {
-                // Corrupted localStorage data - start fresh
-                return createNewSession();
+            tabStartTime = now;
+            if (typeof fbq !== 'undefined') {
+                fbq('trackCustom', 'TabSwitchedBack', {
+                    time_in_background: Math.round(timeInBackgroundThisSession / 1000),
+                    total_time_in_background: Math.round(timeInBackground / 1000),
+                    test_event_code: 'TEST73273'
+                });
             }
         }
-        return createNewSession();
     }
     
-    function saveSession(session) {
-        localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    // Tab Visibility Tracking
+    function initializeTabTracking() {
+        // Use visibilitychange as primary method (more reliable)
+        document.addEventListener('visibilitychange', () => {
+            trackTabSwitch(!document.hidden);
+        });
+        
+        // Update total time on page when page is about to unload
+        window.addEventListener('beforeunload', () => {
+            const now = Date.now();
+            if (isPageVisible) {
+                totalTimeOnPage += now - tabStartTime;
+            }
+        });
     }
-    
-    // Initialize session
-    saveSession(getSession());
-    
-    let finalEventSent = false;
-    
-    // Function to send TotalTimeSpent event with breakdown by page (fires once on page exit)
-    function sendTotalTimeSpent() {
-        if (finalEventSent) {
-            return;
-        }
-        
-        const now = Date.now();
-        
-        if (isPageVisible) {
-            totalTimeOnPage += now - tabStartTime;
-        }
-        
-        finalEventSent = true;
-        
-        // Update session with time spent on this page
-        const currentSession = getSession();
-        currentSession.pageTimes['Register'] = (currentSession.pageTimes['Register'] || 0) + totalTimeOnPage;
-        currentSession.totalTime = Object.values(currentSession.pageTimes).reduce((sum, time) => sum + (typeof time === 'number' ? time : 0), 0);
-        currentSession.lastActivity = now;
-        saveSession(currentSession);
-        
-        // Convert pageTimes to seconds for breakdown
-        const pageBreakdown = Object.fromEntries(
-            Object.entries(currentSession.pageTimes).map(([page, ms]) => [page, Math.round(ms / 1000)])
-        );
-        
-        // Send TotalTimeSpent event with breakdown by page
-        if (typeof fbq !== 'undefined') {
-            const eventData = {
-                page_name: 'Register',
-                total_time_seconds: Math.round(totalTimeOnPage / 1000),
-                time_in_background_seconds: Math.round(timeInBackground / 1000),
-                session_time_seconds: Math.round(currentSession.totalTime / 1000),
-                pages_visited: currentSession.pagesVisited.length,
-                page_breakdown: pageBreakdown,
-                test_event_code: 'TEST73273'
-            };
-            console.log('[Meta Pixel] trackCustom: TotalTimeSpent', eventData);
-            fbq('trackCustom', 'TotalTimeSpent', eventData);
-            
-            // Send to server for terminal logging (local dev)
-            fetch('/api/track', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    eventType: 'trackCustom',
-                    eventName: 'TotalTimeSpent',
-                    eventData: eventData
-                })
-            }).catch(() => {});
-        }
-    }
-    
-    // Track time on page when leaving (fires once per page visit)
-    window.addEventListener('beforeunload', () => {
-        sendTotalTimeSpent();
-    });
-    
-    // Also track on pagehide (more reliable than beforeunload in some browsers)
-    window.addEventListener('pagehide', () => {
-        sendTotalTimeSpent();
-    });
     
     // Form Submission
     async function submitForm() {
@@ -510,15 +360,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify(formData)
             });
             
-            let data = {};
-            try {
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    data = await response.json();
-                }
-            } catch (e) {
-                // Response is not JSON, use empty object
-            }
+            const data = await response.json();
             
             if (response.ok) {
                 // Track successful registration completion
@@ -547,6 +389,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.btn-next').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
+            // Track registration start when user first interacts with form
+            trackRegistrationStart();
             if (validateStep(currentStep) && currentStep < TOTAL_STEPS) {
                 currentStep++;
                 showStep(currentStep);
@@ -575,6 +419,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Phone number auto-formatting
     const phoneInput = getElement('phone');
     if (phoneInput) {
+        // Track registration start when user first types in phone field
+        phoneInput.addEventListener('focus', () => {
+            trackRegistrationStart();
+        });
+        
         phoneInput.addEventListener('input', (e) => {
             const cursorPosition = e.target.selectionStart;
             const oldValue = e.target.value;
@@ -824,6 +673,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeFormFields();
     initializeBreedDropdown();
     initializeVaccinationCards();
+    initializeTabTracking();
     
     // Scroll to center the form when page loads
     function scrollToForm() {
@@ -838,9 +688,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 100);
         }
     }
-    
-    // Track ViewedRegistration when page loads
-    trackRegistrationStart();
     
     // Scroll on page load
     scrollToForm();

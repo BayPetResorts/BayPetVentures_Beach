@@ -22,18 +22,7 @@
     s.parentNode.insertBefore(t,s)}(window,document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
      fbq('init', '1375484534303889'); 
-    console.log('[Meta Pixel] track: PageView');
     fbq('track', 'PageView');
-    // Send to server for terminal logging (local dev)
-    fetch('/api/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            eventType: 'track',
-            eventName: 'PageView',
-            eventData: {}
-        })
-    }).catch(() => {});
     </script>
     <noscript>
      <img height="1" width="1" 
@@ -137,6 +126,14 @@
                             <p class="testimonial-text">"My terrier mix used to bark and freak out at every dog we passed. After a few sessions, she's so much calmer. The one-on-one attention made all the difference!"</p>
                             <p class="testimonial-author">— Jennifer L.</p>
                             <p class="testimonial-location">Sunnyvale, CA</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="testimonial-content">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"Can't stand the thought of Dougie stuck in a windowless kennel with 20 other dogs. This is so much better, real exercise, fresh air, and professional supervision."</p>
+                            <p class="testimonial-author">— David P.</p>
+                            <p class="testimonial-location">Mountain View, CA</p>
                         </div>
                     </div>
                     <div class="testimonial-item">

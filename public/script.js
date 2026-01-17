@@ -1,213 +1,124 @@
 // Bay Pet Ventures - Homepage Script
 document.addEventListener('DOMContentLoaded', function() {
-    // Prevent duplicate execution - use unique page load identifier
-    const pageLoadId = window.location.pathname + '_' + performance.now();
-    if (window.bpvPageViewTracked === pageLoadId) {
-        return;
-    }
-    window.bpvPageViewTracked = pageLoadId;
-    function createNewSession() {
-        const now = Date.now();
-        return { 
-            totalTime: 0, 
-            lastActivity: now, 
-            pagesVisited: [window.location.pathname],
-            pageTimes: {}
-        };
-    }
+    // Session Time Tracking (across all pages)
+    const SESSION_KEY = 'bpv_session';
+    const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 min inactivity = new session
     
     function getSession() {
         const stored = localStorage.getItem(SESSION_KEY);
         if (stored) {
-            try {
-                const session = JSON.parse(stored);
-                const now = Date.now();
-                // Validate session structure
-                if (!session || typeof session !== 'object' || !session.lastActivity) {
-                    return createNewSession();
-                }
-                // If last activity was more than 30 min ago, start new session
-                if (now - session.lastActivity > SESSION_TIMEOUT) {
-                    return createNewSession();
-                }
-                // Initialize missing properties
-                if (!session.pagesVisited || !Array.isArray(session.pagesVisited)) {
-                    session.pagesVisited = [window.location.pathname];
-                }
-                if (!session.pageTimes || typeof session.pageTimes !== 'object') {
-                    session.pageTimes = {};
-                }
-                if (typeof session.totalTime !== 'number') {
-                    session.totalTime = 0;
-                }
-                // Add current page if not already tracked
-                if (!session.pagesVisited.includes(window.location.pathname)) {
-                    session.pagesVisited.push(window.location.pathname);
-                }
-                session.lastActivity = now;
-                return session;
-            } catch (e) {
-                // Corrupted localStorage data - start fresh
-                return createNewSession();
+            const session = JSON.parse(stored);
+            const now = Date.now();
+            // If last activity was more than 30 min ago, start new session
+            if (now - session.lastActivity > SESSION_TIMEOUT) {
+                return { startTime: now, totalTime: 0, lastActivity: now, pagesVisited: [window.location.pathname] };
             }
+            // Add current page if not already tracked
+            if (!session.pagesVisited.includes(window.location.pathname)) {
+                session.pagesVisited.push(window.location.pathname);
+            }
+            session.lastActivity = now;
+            return session;
         }
-        return createNewSession();
+        return { startTime: Date.now(), totalTime: 0, lastActivity: Date.now(), pagesVisited: [window.location.pathname] };
     }
     
     function saveSession(session) {
         localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     }
     
-    // Initialize session
-    saveSession(getSession());
+    const session = getSession();
+    saveSession(session);
     
-    // Page Time Tracking for Meta Pixel (per-page only)
+    // Page Time Tracking for Meta Pixel
     let tabStartTime = Date.now();
-    let totalTimeOnPage = 0; // Time on THIS page only
-    let timeInBackground = 0; // Background time on THIS page only
+    let totalTimeOnPage = 0;
+    let timeInBackground = 0;
     let isPageVisible = true;
-    let finalEventSent = false; // Prevent duplicate final events
+    const pageName = document.title || window.location.pathname;
     
-    // Get clean page identifier
-    function getPageIdentifier() {
-        const path = window.location.pathname.toLowerCase();
-        if (path === '/' || path.includes('index.html')) return 'Homepage';
-        if (path.includes('meet-the-owners')) return 'Meet the Owners';
-        if (path.includes('services')) return 'Trip Info';
-        if (path.includes('faq')) return 'FAQ';
-        if (path.includes('register')) return 'Register';
-        if (path.includes('contact')) return 'Contact Us';
-        return document.title || path;
-    }
-    
-    const pageName = getPageIdentifier();
-    const TEST_EVENT_CODE = 'TEST73273';
-    
-    // Convert page name to event name (e.g., "Homepage" -> "ViewedHomepage")
-    function getViewedEventName() {
-        const eventNameMap = {
-            'Homepage': 'ViewedHomepage',
-            'Meet the Owners': 'ViewedMeetTheOwners',
-            'Trip Info': 'ViewedTripInfo',
-            'FAQ': 'ViewedFAQ',
-            'Register': 'ViewedRegister',
-            'Contact Us': 'ViewedContactUs'
-        };
-        return eventNameMap[pageName] || `Viewed${pageName.replace(/\s+/g, '')}`;
-    }
-    
-    // Helper function to track Meta Pixel events
-    // Automatically includes page_name and test_event_code in all events
-    function trackEvent(eventName, data = {}) {
-        if (typeof fbq !== 'undefined') {
-            const eventData = { 
-                ...data, 
-                page_name: pageName, 
-                test_event_code: TEST_EVENT_CODE 
-            };
-            console.log('[Meta Pixel] trackCustom:', eventName, eventData);
-            fbq('trackCustom', eventName, eventData);
-            
-            // Send to server for terminal logging (local dev)
-            fetch('/api/track', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    eventType: 'trackCustom',
-                    eventName: eventName,
-                    eventData: eventData
-                })
-            }).catch(() => {}); // Silently fail if server not available
-        }
-    }
-    
-    // Track page view with page name (e.g., "ViewedHomepage", "ViewedContactUs")
-    trackEvent(getViewedEventName());
-    
-    // Track tab visibility changes (for accurate time calculation only)
-    function handleVisibilityChange(isVisible) {
+    // Track tab visibility changes
+    function trackTabSwitch(isVisible) {
         const now = Date.now();
         
         if (isPageVisible && !isVisible) {
-            // Tab switched away - accumulate time and pause tracking
-            totalTimeOnPage += now - tabStartTime;
+            // Tab switched away
+            const timeBeforeSwitch = now - tabStartTime;
+            totalTimeOnPage += timeBeforeSwitch;
             tabStartTime = now;
             isPageVisible = false;
+            if (typeof fbq !== 'undefined') {
+                fbq('trackCustom', 'TabSwitchedAway', {
+                    page_name: pageName,
+                    time_on_page: Math.round(totalTimeOnPage / 1000),
+                    test_event_code: 'TEST73273'
+                });
+            }
         } else if (!isPageVisible && isVisible) {
-            // Tab switched back - track background time and resume
-            timeInBackground += now - tabStartTime;
-            tabStartTime = now;
+            // Tab switched back
+            const timeInBackgroundThisSession = now - tabStartTime;
+            timeInBackground += timeInBackgroundThisSession;
             isPageVisible = true;
+            tabStartTime = now;
+            if (typeof fbq !== 'undefined') {
+                fbq('trackCustom', 'TabSwitchedBack', {
+                    page_name: pageName,
+                    time_in_background: Math.round(timeInBackgroundThisSession / 1000),
+                    total_time_in_background: Math.round(timeInBackground / 1000),
+                    test_event_code: 'TEST73273'
+                });
+            }
         }
     }
     
-    // Function to send TotalTimeSpent event with breakdown by page (fires once on page exit)
-    function sendTotalTimeSpent() {
-        // Prevent duplicate events
-        if (finalEventSent) {
-            return;
-        }
-        
-        const now = Date.now();
-        
-        if (isPageVisible) {
-            totalTimeOnPage += now - tabStartTime;
-        }
-        
-        finalEventSent = true;
-        
-        // Update session with time spent on this page
-        const currentSession = getSession();
-        
-        // Track time for this specific page (accumulate if user visits same page multiple times)
-        currentSession.pageTimes[pageName] = (currentSession.pageTimes[pageName] || 0) + totalTimeOnPage;
-        
-        // Calculate session total as sum of all page times (ensures accuracy)
-        currentSession.totalTime = Object.values(currentSession.pageTimes).reduce((sum, time) => sum + (typeof time === 'number' ? time : 0), 0);
-        
-        currentSession.lastActivity = now;
-        saveSession(currentSession);
-        
-        // Convert pageTimes to seconds for breakdown
-        const pageBreakdown = Object.fromEntries(
-            Object.entries(currentSession.pageTimes).map(([page, ms]) => [page, Math.round(ms / 1000)])
-        );
-        
-        // Send TotalTimeSpent event with breakdown by page
-        trackEvent('TotalTimeSpent', {
-            total_time_seconds: Math.round(totalTimeOnPage / 1000), // Time on current page
-            time_in_background_seconds: Math.round(timeInBackground / 1000),
-            session_time_seconds: Math.round(currentSession.totalTime / 1000), // Aggregate time (sum of all pages)
-            pages_visited: currentSession.pagesVisited.length,
-            page_breakdown: pageBreakdown // Breakdown by page: { "Homepage": 30, "Contact Us": 45 }
-        });
-    }
-    
-    // Track visibility changes for accurate time calculation
+    // Initialize tab tracking
+    // Use visibilitychange as primary method (more reliable than blur/focus)
     document.addEventListener('visibilitychange', () => {
-        handleVisibilityChange(!document.hidden);
+        trackTabSwitch(!document.hidden);
     });
     
     // Track when user sees the pricing section
     const pricingSection = document.querySelector('.package-offer-section');
     if (pricingSection) {
         const observer = new IntersectionObserver((entries) => {
-            if (entries.length > 0 && entries[0].isIntersecting) {
-                trackEvent('ViewedPricing');
-                observer.disconnect();
+            if (entries[0].isIntersecting) {
+                if (typeof fbq !== 'undefined') {
+                    fbq('trackCustom', 'ViewedPricing', {
+                        page_name: pageName,
+                        test_event_code: 'TEST73273'
+                    });
+                }
+                observer.disconnect(); // Only track once
             }
         });
         observer.observe(pricingSection);
     }
     
-    // Track time on page when leaving (fires once per page visit)
+    // Track time on page when leaving
     window.addEventListener('beforeunload', () => {
-        sendTotalTimeSpent();
-    });
-    
-    // Also track on pagehide (more reliable than beforeunload in some browsers)
-    window.addEventListener('pagehide', () => {
-        sendTotalTimeSpent();
+        const now = Date.now();
+        if (isPageVisible) {
+            totalTimeOnPage += now - tabStartTime;
+        }
+        
+        // Update session with time spent on this page
+        const currentSession = getSession();
+        currentSession.totalTime += totalTimeOnPage;
+        currentSession.lastActivity = now;
+        saveSession(currentSession);
+        
+        const totalSessionTime = Math.round((now - currentSession.startTime) / 1000);
+        
+        if (typeof fbq !== 'undefined') {
+            fbq('trackCustom', 'PageTimeSpent', {
+                page_name: pageName,
+                total_time_seconds: Math.round(totalTimeOnPage / 1000),
+                time_in_background_seconds: Math.round(timeInBackground / 1000),
+                session_time_seconds: totalSessionTime,
+                pages_visited: currentSession.pagesVisited.length,
+                test_event_code: 'TEST73273'
+            });
+        }
     });
     
     // Discount Banner Functionality
@@ -217,17 +128,26 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (discountBanner && currentMonthElement) {
         // Get current month name
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                          'July', 'August', 'September', 'October', 'November', 'December'];
         const currentDate = new Date();
-        const currentMonthName = currentDate.toLocaleString('default', { month: 'long' });
+        const currentMonthName = monthNames[currentDate.getMonth()];
         currentMonthElement.textContent = currentMonthName;
         
-        // Always show banner on page load
-        discountBanner.classList.remove('hidden');
+        // Check if banner was previously closed (using localStorage with month key)
+        const bannerKey = `discountBannerClosed_${currentMonthName}_${currentDate.getFullYear()}`;
+        const isBannerClosed = localStorage.getItem(bannerKey) === 'true';
         
-        // Close banner functionality (hides for current session only)
+        if (isBannerClosed) {
+            discountBanner.classList.add('hidden');
+        }
+        
+        // Close banner functionality
         if (discountBannerClose) {
             discountBannerClose.addEventListener('click', function() {
                 discountBanner.classList.add('hidden');
+                // Store closed state for this month/year
+                localStorage.setItem(bannerKey, 'true');
             });
         }
     }
@@ -253,14 +173,19 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Function to attempt video playback
         const attemptPlay = () => {
-            heroVideo.play().catch(() => {
-                // Autoplay was prevented, try again after user interaction
-                const playOnInteraction = () => {
-                    heroVideo.play().catch(() => {});
-                };
-                document.addEventListener('touchstart', playOnInteraction, { once: true });
-                document.addEventListener('click', playOnInteraction, { once: true });
-            });
+            const playPromise = heroVideo.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    // Autoplay was prevented, try again after user interaction
+                    const playOnInteraction = () => {
+                        heroVideo.play().catch(() => {});
+                        document.removeEventListener('touchstart', playOnInteraction);
+                        document.removeEventListener('click', playOnInteraction);
+                    };
+                    document.addEventListener('touchstart', playOnInteraction, { once: true });
+                    document.addEventListener('click', playOnInteraction, { once: true });
+                });
+            }
         };
         
         // Try to play immediately
@@ -347,23 +272,26 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Pause on touch (mobile)
         let touchTimeout = null;
-        const clearTouchTimeout = () => {
-            if (touchTimeout) clearTimeout(touchTimeout);
-        };
         
         testimonialsContainer.addEventListener('touchstart', () => {
             isPaused = true;
-            clearTouchTimeout();
+            if (touchTimeout) {
+                clearTimeout(touchTimeout);
+            }
+        });
+        
+        testimonialsContainer.addEventListener('touchend', () => {
+            // Small delay before resuming to allow for scroll gestures
+            touchTimeout = setTimeout(() => {
+                isPaused = false;
+            }, 500);
         });
         
         testimonialsContainer.addEventListener('touchmove', () => {
             isPaused = true;
-            clearTouchTimeout();
-        });
-        
-        testimonialsContainer.addEventListener('touchend', () => {
-            clearTouchTimeout();
-            touchTimeout = setTimeout(() => { isPaused = false; }, 500);
+            if (touchTimeout) {
+                clearTimeout(touchTimeout);
+            }
         });
         
         // Auto-scroll animation
