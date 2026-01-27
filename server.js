@@ -145,7 +145,20 @@ app.post('/api/contact', async (req, res) => {
     const sheetId = process.env.GOOGLE_SHEET_ID;
     if (sheets && sheetId) {
       console.log(`📊 Attempting to save to Google Sheets (Sheet ID: ${sheetId.substring(0, 10)}...)`);
-      const range = 'Sheet1!A:H'; // Timestamp, First Name, Last Name, Email, Phone, Dog Name, Breed, Notes
+      
+      // Get the actual sheet name from the spreadsheet (more robust than hardcoding "Sheet1")
+      let sheetName = 'Sheet1'; // Default fallback
+      try {
+        const spreadsheet = await sheets.spreadsheets.get({
+          spreadsheetId: sheetId
+        });
+        if (spreadsheet.data.sheets && spreadsheet.data.sheets.length > 0) {
+          sheetName = spreadsheet.data.sheets[0].properties.title;
+          console.log(`📋 Using sheet name: "${sheetName}"`);
+        }
+      } catch (sheetNameError) {
+        console.warn(`⚠️  Could not get sheet name, using default "Sheet1":`, sheetNameError.message);
+      }
 
       // Refresh OAuth token if using OAuth 2.0
       if (oauth2Client) {
@@ -159,17 +172,18 @@ app.post('/api/contact', async (req, res) => {
       }
 
       // Check if headers exist, if not, add them
+      const headerRange = `${sheetName}!A1:H1`;
       try {
         const headerResponse = await sheets.spreadsheets.values.get({
           spreadsheetId: sheetId,
-          range: 'Sheet1!A1:H1'
+          range: headerRange
         });
 
         if (!headerResponse.data.values || headerResponse.data.values.length === 0) {
           // Add headers
           await sheets.spreadsheets.values.update({
             spreadsheetId: sheetId,
-            range: 'Sheet1!A1:H1',
+            range: headerRange,
             valueInputOption: 'RAW',
             resource: {
               values: [['Timestamp', 'First Name', 'Last Name', 'Email', 'Phone', 'Dog Name', 'Breed', 'Notes']]
@@ -209,10 +223,11 @@ app.post('/api/contact', async (req, res) => {
       // Generate PST timestamp
       const pstTimestamp = formatInTimeZone(new Date(), 'America/Los_Angeles', 'yyyy-MM-dd HH:mm:ss zzz');
 
-      // Append the new row
+      // Append the new row - use A1 format which is more reliable for append
+      // The append method will automatically append to the end of the sheet
       await sheets.spreadsheets.values.append({
         spreadsheetId: sheetId,
-        range: range,
+        range: `${sheetName}!A1`,
         valueInputOption: 'RAW',
         resource: {
           values: [[
